@@ -32,7 +32,7 @@ module Feedkit
         @recognized_url.url.query = "screen_name=#{@recognized_url.value}"
       end
 
-      Parser::ParsedTwitterFeed.new(@url.to_s, tweets, @recognized_url.type, @recognized_url.value, options)
+      Parser::ParsedTwitterFeed.new(@recognized_url.url.to_s, tweets, @recognized_url.type, @recognized_url.value, options)
     end
 
     private

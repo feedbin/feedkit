@@ -22,7 +22,7 @@ require "feedkit/parser/parsed_xml_entry"
 require "feedkit/parser/parsed_xml_feed"
 
 module Feedkit
-  def self.fetch_and_parse(url, options: {})
+  def self.fetch_and_parse(url, options = {})
     feed = nil
     feed = twitter_feed(url, options) if feed.nil?
     feed = request_feed(url, options) if feed.nil?
@@ -35,7 +35,7 @@ module Feedkit
     feed = nil
     twitter_url = TwitterURLRecognizer.new(url, options[:twitter_screen_name])
     if twitter_url.valid?
-      feed = TwitterFeed.new(twitter_url, options[:twitter_token], options[:twitter_secret]).feed
+      feed = TwitterFeed.new(twitter_url, options[:twitter_access_token], options[:twitter_access_secret]).feed
     end
     feed
   end

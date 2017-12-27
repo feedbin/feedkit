@@ -1,15 +1,15 @@
 require "test_helper"
 
-class Feedbin::ParserTest < Minitest::Test
+class FeedkitTest < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::Feedbin::Parser::VERSION
+    refute_nil ::Feedkit::VERSION
   end
 
   def test_xml_feed
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
 
-    result = Feedbin::Parser.fetch_and_parse(url)
+    result = Feedkit.fetch_and_parse(url)
     result.to_feed
   end
 
@@ -17,7 +17,7 @@ class Feedbin::ParserTest < Minitest::Test
     url = "http://www.example.com/feed.json"
     stub_request_file("feed.json", url)
 
-    result = Feedbin::Parser.fetch_and_parse(url)
+    result = Feedkit.fetch_and_parse(url)
     result.to_feed
   end
 

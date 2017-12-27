@@ -1,5 +1,5 @@
 $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
-require "feedbin/parser"
+require "feedkit/feedkit"
 
 require "minitest/autorun"
 require 'webmock/minitest'

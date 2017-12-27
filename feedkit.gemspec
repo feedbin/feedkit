@@ -1,11 +1,11 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "feedbin/parser/version"
+require "feedkit/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "feedbin-parser"
-  spec.version       = Feedbin::Parser::VERSION
+  spec.name          = "feedkit"
+  spec.version       = Feedkit::VERSION
   spec.authors       = ["Ben Ubois"]
   spec.email         = ["ben@benubois.com"]
 

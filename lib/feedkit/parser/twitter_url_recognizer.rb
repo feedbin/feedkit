@@ -1,4 +1,4 @@
-module Feedbin
+module Feedkit
   module Parser
     class TwitterURLRecognizer
       attr_reader :url

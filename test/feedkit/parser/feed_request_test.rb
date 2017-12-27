@@ -1,13 +1,13 @@
 require 'test_helper'
 
-class Feedbin::Parser::FeedRequestTest < Minitest::Test
+class Feedkit::Parser::FeedRequestTest < Minitest::Test
 
   def test_get_body
     url = "http://www.example.com/atom.xml"
     body = random_string
     stub_request(:get, url).to_return(body: body)
 
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
 
     assert_equal body, feed_request.body
   end
@@ -24,7 +24,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
     }
     stub_request(:get, url).to_return(response)
 
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
 
     assert_equal body, feed_request.body
   end
@@ -32,14 +32,14 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
   def test_should_be_xml
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
     assert_equal :xml, feed_request.format
   end
 
   def test_should_be_json_feed
     url = "http://www.example.com/feed.json"
     stub_request_file("feed.json", url, {headers: {"Content-Type" => "application/json"}})
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
     assert_equal :json_feed, feed_request.format
   end
 
@@ -47,7 +47,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
     url = "http://www.example.com/atom.xml"
     body = random_string
     stub_request(:get, url).to_return(body: body)
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
     assert_equal :html, feed_request.format
   end
 
@@ -65,7 +65,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
     stub_request(:get, first_url).to_return(response)
     stub_request(:get, last_url)
 
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: first_url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: first_url)
     assert_equal last_url, feed_request.last_effective_url
   end
 
@@ -81,7 +81,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
       }
     }
     stub_request(:get, url).to_return(response)
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
 
     assert_equal last_modified.httpdate, feed_request.last_modified.httpdate
     assert_equal etag, feed_request.etag
@@ -96,7 +96,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
       headers: {"If-None-Match" => etag}
     }
     stub_request(:get, url).with(request).to_return(status: status)
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url, options: {if_none_match: etag})
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url, options: {if_none_match: etag})
 
     assert_equal status, feed_request.status
   end
@@ -110,7 +110,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
       headers: {"If-Modified-Since" => last_modified.httpdate}
     }
     stub_request(:get, url).with(request).to_return(status: status)
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url, options: {if_modified_since: last_modified})
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url, options: {if_modified_since: last_modified})
 
     assert_equal status, feed_request.status
   end
@@ -124,7 +124,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
       }
     }
     stub_request(:get, url).to_return(response)
-    feed_request = ::Feedbin::Parser::FeedRequest.new(url: url)
+    feed_request = ::Feedkit::Parser::FeedRequest.new(url: url)
 
     assert_equal charset.upcase, feed_request.charset
   end
@@ -140,7 +140,7 @@ class Feedbin::Parser::FeedRequestTest < Minitest::Test
       "htttps://www.example.com" => "https://www.example.com",
     }
     samples.each do |typo, clean|
-      feed_request = ::Feedbin::Parser::FeedRequest.new(url: typo, clean: true)
+      feed_request = ::Feedkit::Parser::FeedRequest.new(url: typo, clean: true)
       assert_equal clean, feed_request.url
     end
   end

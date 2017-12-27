@@ -7,9 +7,10 @@ require 'cgi'
 
 require "feedkit/feedjira_extension"
 
-require "feedkit/parser/feed_request"
-require "feedkit/parser/twitter_url_recognizer"
-require "feedkit/parser/twitter_feed"
+require "feedkit/version"
+require "feedkit/request"
+require "feedkit/twitter_url_recognizer"
+require "feedkit/twitter_feed"
 
 require "feedkit/parser/parsed_entry"
 require "feedkit/parser/parsed_feed"
@@ -19,7 +20,6 @@ require "feedkit/parser/parsed_tweet_entry"
 require "feedkit/parser/parsed_twitter_feed"
 require "feedkit/parser/parsed_xml_entry"
 require "feedkit/parser/parsed_xml_feed"
-require "feedkit/version"
 
 module Feedkit
   def self.fetch_and_parse(url, options: {})
@@ -33,9 +33,9 @@ module Feedkit
 
   def self.twitter_feed(url, options)
     feed = nil
-    twitter_url = Parser::TwitterURLRecognizer.new(url, options[:twitter_screen_name])
+    twitter_url = TwitterURLRecognizer.new(url, options[:twitter_screen_name])
     if twitter_url.valid?
-      feed = Parser::TwitterFeed.new(twitter_url, options[:twitter_token], options[:twitter_secret]).feed
+      feed = TwitterFeed.new(twitter_url, options[:twitter_token], options[:twitter_secret]).feed
     end
     feed
   end
@@ -44,7 +44,7 @@ module Feedkit
     feed = nil
     request = options[:request]
     if request.nil?
-      request = Parser::FeedRequest.new(url: url)
+      request = Request.new(url: url)
     end
     if !request.body.nil? && [:xml, :json_feed].include?(request.format)
       if request.format == :xml

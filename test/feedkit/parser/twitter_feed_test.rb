@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class Feedkit::Parser::TwitterFeedTest < Minitest::Test
+class Feedkit::TwitterFeedTest < Minitest::Test
 
   class TwitterClient
     def user_timeline(*args)
@@ -35,9 +35,9 @@ class Feedkit::Parser::TwitterFeedTest < Minitest::Test
     ]
 
     urls.each do |url|
-      url = ::Feedkit::Parser::TwitterURLRecognizer.new(url, "bsaid")
+      url = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
 
-      feed = Feedkit::Parser::TwitterFeed.new(url, 'asdf', 'asdf')
+      feed = Feedkit::TwitterFeed.new(url, 'asdf', 'asdf')
       feed.stub :client, TwitterClient.new do
         feed.feed
       end

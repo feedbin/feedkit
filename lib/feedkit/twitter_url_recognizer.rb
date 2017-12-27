@@ -4,6 +4,7 @@ module Feedkit
 
     def initialize(url, screen_name)
       @url = format_url(url)
+      @screen_name = screen_name
       recognize
     end
 

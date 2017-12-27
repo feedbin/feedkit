@@ -21,17 +21,13 @@ module Feedkit
 
       case @recognized_url.type
       when :user
-        type = :user
         tweets = client.user_timeline(@recognized_url.value, default_options.merge(exclude_replies: true))
         options["twitter_user"] = client.user(@recognized_url.value)
       when :search
-        type = :search
         tweets = client.search(@recognized_url.value, default_options.merge(result_type: "recent", include_entities: true)).map{|a|a}
       when :list
-        type = :list
         tweets = client.list_timeline(@recognized_url.value[:user], @recognized_url.value[:list], default_options)
       when :home
-        type = :home
         tweets = client.home_timeline(default_options)
         @url.query = "screen_name=#{@recognized_url.value}"
       end

@@ -44,4 +44,11 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "#feedbin", twitter_feed.value
     assert_equal :search, twitter_feed.type
   end
+
+  def test_should_recognize_home
+    url = "twitter.com"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
+    assert_equal "bsaid", twitter_feed.value
+    assert_equal :home, twitter_feed.type
+  end
 end

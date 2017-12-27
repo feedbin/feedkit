@@ -17,7 +17,7 @@ module Feedkit
     end
 
     def valid?
-      type && value
+      !!(type && value)
     end
 
     private

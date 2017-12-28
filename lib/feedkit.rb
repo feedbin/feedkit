@@ -48,9 +48,9 @@ module Feedkit
     end
     if !request.body.nil? && [:xml, :json_feed].include?(request.format)
       if request.format == :xml
-        feed = Parser::XMLFeed.new(request.body, request)
+        feed = Parser::XMLFeed.new(request.body, request, options[:base_url])
       elsif request.format == :json_feed
-        feed = Parser::JSONFeed.new(request.body, request)
+        feed = Parser::JSONFeed.new(request.body, request, options[:base_url])
       end
     end
     feed

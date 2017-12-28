@@ -62,7 +62,7 @@ module Feedkit
       def entries
         @entries ||= begin
           @tweets.map do |tweet|
-            ParsedTweetEntry.new(tweet, @url)
+            ParsedTwitterEntry.new(tweet, @url)
           end
         end
       end

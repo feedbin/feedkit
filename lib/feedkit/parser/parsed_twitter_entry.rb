@@ -1,7 +1,7 @@
 module Feedkit
   module Parser
 
-    class ParsedTweetEntry < ParsedEntry
+    class ParsedTwitterEntry < ParsedEntry
 
       def initialize(tweet, feed_url)
         @tweet = tweet

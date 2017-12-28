@@ -1,11 +1,11 @@
 # encoding: utf-8
 require 'test_helper'
 
-class Feedkit::Parser::ParsedTwitterEntryTest < Minitest::Test
+class Feedkit::Parser::TwitterEntryTest < Minitest::Test
 
   def setup
     @tweet = load_tweet
-    @parsed_tweet = ::Feedkit::Parser::ParsedTwitterEntry.new(@tweet, "https://twitter.com/bsaid")
+    @parsed_tweet = ::Feedkit::Parser::TwitterEntry.new(@tweet, "https://twitter.com/bsaid")
     @expected = nil
   end
 

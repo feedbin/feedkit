@@ -1,7 +1,7 @@
 module Feedkit
   module Parser
 
-    class ParsedXMLEntry < ParsedEntry
+    class XMLEntry < Entry
 
       def entry_id
         @entry.entry_id ? @entry.entry_id.strip : nil

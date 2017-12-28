@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class Feedkit::TwitterFeedTest < Minitest::Test
+class Feedkit::TweetsTest < Minitest::Test
 
   class TwitterClient
     def user_timeline(*args)
@@ -38,7 +38,7 @@ class Feedkit::TwitterFeedTest < Minitest::Test
     urls.each do |input_url, output_url|
       url = ::Feedkit::TwitterURLRecognizer.new(input_url, "bsaid")
 
-      feed = Feedkit::TwitterFeed.new(url, 'asdf', 'asdf')
+      feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
       feed.stub :client, TwitterClient.new do
         assert_equal(output_url, feed.feed.feed_url)
         assert !!feed.feed.title
@@ -51,7 +51,7 @@ class Feedkit::TwitterFeedTest < Minitest::Test
 
     url = ::Feedkit::TwitterURLRecognizer.new(input_url, "bsaid")
 
-    feed = Feedkit::TwitterFeed.new(url, 'asdf', 'asdf')
+    feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
     feed.stub :client, TwitterClient.new do
       assert !!feed.feed.entries
 

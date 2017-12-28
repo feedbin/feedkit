@@ -1,6 +1,6 @@
 module Feedkit
   module Parser
-    class ParsedTwitterFeed
+    class TwitterFeed
 
       attr_reader :feed, :entries
 
@@ -62,7 +62,7 @@ module Feedkit
       def entries
         @entries ||= begin
           @tweets.map do |tweet|
-            ParsedTwitterEntry.new(tweet, @url)
+            TwitterEntry.new(tweet, @url)
           end
         end
       end

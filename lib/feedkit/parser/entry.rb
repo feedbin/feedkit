@@ -1,6 +1,6 @@
 module Feedkit
   module Parser
-    class ParsedEntry
+    class Entry
 
       ENTRY_ATTRIBUTES = %i(author content data entry_id public_id published source title url).freeze
 

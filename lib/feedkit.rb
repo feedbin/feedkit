@@ -10,16 +10,16 @@ require "feedkit/feedjira_extension"
 require "feedkit/version"
 require "feedkit/request"
 require "feedkit/twitter_url_recognizer"
-require "feedkit/twitter_feed"
+require "feedkit/tweets"
 
-require "feedkit/parser/parsed_entry"
-require "feedkit/parser/parsed_feed"
-require "feedkit/parser/parsed_json_entry"
-require "feedkit/parser/parsed_json_feed"
-require "feedkit/parser/parsed_twitter_entry"
-require "feedkit/parser/parsed_twitter_feed"
-require "feedkit/parser/parsed_xml_entry"
-require "feedkit/parser/parsed_xml_feed"
+require "feedkit/parser/entry"
+require "feedkit/parser/feed"
+require "feedkit/parser/json_entry"
+require "feedkit/parser/json_feed"
+require "feedkit/parser/twitter_entry"
+require "feedkit/parser/twitter_feed"
+require "feedkit/parser/xml_entry"
+require "feedkit/parser/xml_feed"
 
 module Feedkit
   def self.fetch_and_parse(url, options = {})
@@ -35,7 +35,7 @@ module Feedkit
     feed = nil
     twitter_url = TwitterURLRecognizer.new(url, options[:twitter_screen_name])
     if twitter_url.valid?
-      feed = TwitterFeed.new(twitter_url, options[:twitter_access_token], options[:twitter_access_secret]).feed
+      feed = Tweets.new(twitter_url, options[:twitter_access_token], options[:twitter_access_secret]).feed
     end
     feed
   end
@@ -48,9 +48,9 @@ module Feedkit
     end
     if !request.body.nil? && [:xml, :json_feed].include?(request.format)
       if request.format == :xml
-        feed = Parser::ParsedXMLFeed.new(request.body, request)
+        feed = Parser::XMLFeed.new(request.body, request)
       elsif request.format == :json_feed
-        feed = Parser::ParsedJSONFeed.new(request.body, request)
+        feed = Parser::JSONFeed.new(request.body, request)
       end
     end
     feed

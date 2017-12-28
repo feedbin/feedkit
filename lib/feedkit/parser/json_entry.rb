@@ -1,7 +1,7 @@
 module Feedkit
   module Parser
 
-    class ParsedJSONEntry < ParsedEntry
+    class JSONEntry < Entry
 
       def initialize(entry, feed_url, feed_author)
         super(entry, feed_url)

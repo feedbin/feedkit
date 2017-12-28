@@ -1,6 +1,6 @@
 module Feedkit
   module Parser
-    class ParsedJSONFeed < ParsedFeed
+    class JSONFeed < Feed
 
       def feed
         @feed ||= JSON.load(@body)
@@ -54,7 +54,7 @@ module Feedkit
           entries = []
           if feed["items"].respond_to?(:any?) && feed["items"].any?
             entries = feed["items"].map do |entry|
-              ParsedJSONEntry.new(entry, base_url, author)
+              JSONEntry.new(entry, base_url, author)
             end
             entries = entries.uniq { |entry| entry.public_id }
           end

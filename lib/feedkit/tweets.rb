@@ -1,5 +1,5 @@
 module Feedkit
-  class TwitterFeed
+  class Tweets
     attr_reader :url
 
     def initialize(recognized_url, token, secret)
@@ -32,7 +32,7 @@ module Feedkit
         @recognized_url.url.query = "screen_name=#{@recognized_url.value}"
       end
 
-      Parser::ParsedTwitterFeed.new(@recognized_url.url.to_s, tweets, @recognized_url.type, @recognized_url.value, options)
+      Parser::TwitterFeed.new(@recognized_url.url.to_s, tweets, @recognized_url.type, @recognized_url.value, options)
     end
 
     private

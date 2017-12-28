@@ -1,6 +1,6 @@
 module Feedkit
   module Parser
-    class ParsedFeed
+    class Feed
 
       attr_reader :feed, :entries
 

@@ -1,6 +1,6 @@
 module Feedkit
   module Parser
-    class ParsedXMLFeed < ParsedFeed
+    class XMLFeed < Feed
 
       def feed
         parser = Feedjira.parser_for_xml(@body)
@@ -57,7 +57,7 @@ module Feedkit
           entries = []
           if feed.entries.respond_to?(:any?) && feed.entries.any?
             entries = feed.entries.map do |entry|
-              ParsedXMLEntry.new(entry, base_url, self)
+              XMLEntry.new(entry, base_url, self)
             end
             entries = entries.uniq { |entry| entry.public_id }
           end

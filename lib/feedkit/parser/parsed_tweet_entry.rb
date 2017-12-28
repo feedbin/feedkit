@@ -13,7 +13,7 @@ class ParsedTweetEntry < ParsedEntry
   end
 
   def author
-    main_tweet.user.name || "@#{main_tweet.user.name.screen_name}"
+    main_tweet.user.name || "@#{main_tweet.user.screen_name}"
   end
 
   def content
@@ -35,7 +35,7 @@ class ParsedTweetEntry < ParsedEntry
   end
 
   def title
-    nil
+    "#{main_tweet.user.name} @#{main_tweet.user.screen_name}"
   end
 
   def url

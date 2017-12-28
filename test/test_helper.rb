@@ -1,4 +1,5 @@
 $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
+require "json"
 require "feedkit"
 
 require "minitest/autorun"
@@ -13,4 +14,9 @@ end
 
 def random_string
   (0...50).map { ('a'..'z').to_a[rand(26)] }.join
+end
+
+def load_tweet
+  file = File.read("test/support/tweet.json")
+  Twitter::Tweet.new(JSON.parse(file, symbolize_names: true))
 end

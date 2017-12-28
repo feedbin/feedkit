@@ -1,0 +1,248 @@
+{
+   "user" : {
+      "is_translator" : false,
+      "has_extended_profile" : true,
+      "notifications" : false,
+      "description" : "CTO of @InfluxDB (YC W13), organizer of NYC Machine Learning, series editor for Addison Wesley's Data & Analytics, author of Service Oriented Design with Ruby.",
+      "contributors_enabled" : false,
+      "id_str" : "13826102",
+      "profile_text_color" : "333333",
+      "profile_background_image_url" : "http://abs.twimg.com/images/themes/theme1/bg.png",
+      "statuses_count" : 4419,
+      "profile_sidebar_fill_color" : "DDEEF6",
+      "default_profile" : true,
+      "listed_count" : 378,
+      "id" : 13826102,
+      "favourites_count" : 567,
+      "time_zone" : "Eastern Time (US & Canada)",
+      "geo_enabled" : true,
+      "profile_sidebar_border_color" : "C0DEED",
+      "follow_request_sent" : false,
+      "protected" : false,
+      "created_at" : "Fri Feb 22 16:50:28 +0000 2008",
+      "friends_count" : 890,
+      "entities" : {
+         "description" : {
+            "urls" : []
+         },
+         "url" : {
+            "urls" : [
+               {
+                  "url" : "https://t.co/aDf2Gn4hCk",
+                  "display_url" : "influxdata.com",
+                  "indices" : [
+                     0,
+                     23
+                  ],
+                  "expanded_url" : "http://influxdata.com"
+               }
+            ]
+         }
+      },
+      "profile_banner_url" : "https://pbs.twimg.com/profile_banners/13826102/1513202307",
+      "utc_offset" : -18000,
+      "is_translation_enabled" : false,
+      "profile_background_tile" : false,
+      "profile_link_color" : "1DA1F2",
+      "screen_name" : "pauldix",
+      "profile_image_url_https" : "https://pbs.twimg.com/profile_images/941054872874602499/4bIk5yVb_normal.jpg",
+      "profile_background_image_url_https" : "https://abs.twimg.com/images/themes/theme1/bg.png",
+      "profile_image_url" : "http://pbs.twimg.com/profile_images/941054872874602499/4bIk5yVb_normal.jpg",
+      "lang" : "en",
+      "profile_background_color" : "C0DEED",
+      "profile_use_background_image" : true,
+      "following" : true,
+      "url" : "https://t.co/aDf2Gn4hCk",
+      "translator_type" : "none",
+      "location" : "New York City, NY",
+      "default_profile_image" : false,
+      "followers_count" : 5324,
+      "verified" : false,
+      "name" : "Paul Dix"
+   },
+   "in_reply_to_user_id" : null,
+   "coordinates" : null,
+   "geo" : null,
+   "possibly_sensitive" : false,
+   "favorited" : false,
+   "place" : null,
+   "id_str" : "946202870071820290",
+   "retweet_count" : 0,
+   "in_reply_to_screen_name" : null,
+   "in_reply_to_user_id_str" : null,
+   "lang" : "en",
+   "source" : "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+   "retweeted" : false,
+   "quoted_status_id_str" : "946137848498888704",
+   "id" : 946202870071820290,
+   "quoted_status_id" : 946137848498888704,
+   "possibly_sensitive_appealable" : false,
+   "full_text" : "\"Modeling change over time\", not just what we should be doing with our time series, but also with our people. Happy to have @TheKaterTot on board :) https://t.co/QljAf1YPyF",
+   "display_text_range" : [
+      0,
+      148
+   ],
+   "in_reply_to_status_id" : null,
+   "entities" : {
+      "urls" : [
+         {
+            "expanded_url" : "https://twitter.com/TheKaterTot/status/946137848498888704",
+            "indices" : [
+               149,
+               172
+            ],
+            "display_url" : "twitter.com/TheKaterTot/st…",
+            "url" : "https://t.co/QljAf1YPyF"
+         }
+      ],
+      "hashtags" : [],
+      "symbols" : [],
+      "user_mentions" : [
+         {
+            "id_str" : "249247936",
+            "id" : 249247936,
+            "screen_name" : "TheKaterTot",
+            "name" : "Katy",
+            "indices" : [
+               124,
+               136
+            ]
+         }
+      ]
+   },
+   "created_at" : "Thu Dec 28 02:15:18 +0000 2017",
+   "truncated" : false,
+   "favorite_count" : 2,
+   "in_reply_to_status_id_str" : null,
+   "is_quote_status" : true,
+   "quoted_status" : {
+      "full_text" : "A short post on why I chose to work at @InfluxDB. https://t.co/9yiyCNJwpw\n@turingschool #ruby #Developer",
+      "display_text_range" : [
+         0,
+         104
+      ],
+      "possibly_sensitive_appealable" : false,
+      "id" : 946137848498888704,
+      "is_quote_status" : false,
+      "contributors" : null,
+      "favorite_count" : 9,
+      "in_reply_to_status_id_str" : null,
+      "truncated" : false,
+      "created_at" : "Wed Dec 27 21:56:56 +0000 2017",
+      "in_reply_to_status_id" : null,
+      "entities" : {
+         "urls" : [
+            {
+               "indices" : [
+                  50,
+                  73
+               ],
+               "expanded_url" : "https://www.influxdata.com/blog/how-ruby-brought-me-to-influxdata/",
+               "display_url" : "influxdata.com/blog/how-ruby-…",
+               "url" : "https://t.co/9yiyCNJwpw"
+            }
+         ],
+         "hashtags" : [
+            {
+               "text" : "ruby",
+               "indices" : [
+                  88,
+                  93
+               ]
+            },
+            {
+               "indices" : [
+                  94,
+                  104
+               ],
+               "text" : "Developer"
+            }
+         ],
+         "symbols" : [],
+         "user_mentions" : [
+            {
+               "id_str" : "1967601206",
+               "id" : 1967601206,
+               "name" : "InfluxData",
+               "indices" : [
+                  39,
+                  48
+               ],
+               "screen_name" : "InfluxDB"
+            },
+            {
+               "id" : 1973042528,
+               "id_str" : "1973042528",
+               "name" : "Turing School",
+               "indices" : [
+                  74,
+                  87
+               ],
+               "screen_name" : "turingschool"
+            }
+         ]
+      },
+      "favorited" : false,
+      "geo" : null,
+      "possibly_sensitive" : false,
+      "coordinates" : null,
+      "user" : {
+         "created_at" : "Tue Feb 08 17:29:03 +0000 2011",
+         "friends_count" : 697,
+         "entities" : {
+            "description" : {
+               "urls" : []
+            }
+         },
+         "profile_banner_url" : "https://pbs.twimg.com/profile_banners/249247936/1451696579",
+         "utc_offset" : null,
+         "default_profile" : false,
+         "listed_count" : 10,
+         "id" : 249247936,
+         "favourites_count" : 1123,
+         "geo_enabled" : true,
+         "profile_sidebar_border_color" : "000000",
+         "time_zone" : null,
+         "follow_request_sent" : false,
+         "protected" : false,
+         "contributors_enabled" : false,
+         "id_str" : "249247936",
+         "profile_text_color" : "000000",
+         "profile_background_image_url" : "http://abs.twimg.com/images/themes/theme1/bg.png",
+         "statuses_count" : 543,
+         "profile_sidebar_fill_color" : "000000",
+         "is_translator" : false,
+         "has_extended_profile" : false,
+         "notifications" : false,
+         "description" : "Software developer, Writer, Fangirl, Netflix marathon-er",
+         "default_profile_image" : false,
+         "followers_count" : 300,
+         "verified" : false,
+         "name" : "Katy",
+         "profile_use_background_image" : false,
+         "following" : false,
+         "url" : null,
+         "translator_type" : "none",
+         "location" : "Oakland, CA",
+         "screen_name" : "TheKaterTot",
+         "profile_image_url_https" : "https://pbs.twimg.com/profile_images/713140529639194625/AiZ9CQaA_normal.jpg",
+         "profile_background_image_url_https" : "https://abs.twimg.com/images/themes/theme1/bg.png",
+         "lang" : "en",
+         "profile_image_url" : "http://pbs.twimg.com/profile_images/713140529639194625/AiZ9CQaA_normal.jpg",
+         "profile_background_color" : "000000",
+         "is_translation_enabled" : false,
+         "profile_background_tile" : false,
+         "profile_link_color" : "3B94D9"
+      },
+      "in_reply_to_user_id" : null,
+      "retweeted" : false,
+      "in_reply_to_user_id_str" : null,
+      "source" : "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+      "lang" : "en",
+      "retweet_count" : 3,
+      "in_reply_to_screen_name" : null,
+      "place" : null,
+      "id_str" : "946137848498888704"
+   },
+   "contributors" : null
+}

@@ -18,18 +18,6 @@ module Feedkit
         end
       end
 
-      def build_id(base_entry_id)
-        parts = []
-        parts.push(@feed_url)
-        parts.push(base_entry_id)
-        if !entry_id
-          parts.push(url)
-          parts.push(published.iso8601) if published.respond_to?(:iso8601)
-          parts.push(title)
-        end
-        Digest::SHA1.hexdigest(parts.compact.join)
-      end
-
       def public_id
         @public_id ||= build_id(entry_id)
       end
@@ -40,6 +28,10 @@ module Feedkit
             build_id(entry_id_alt)
           end
         end
+      end
+
+      def source
+        Socket.gethostname
       end
 
       def entry_id_alt
@@ -58,14 +50,22 @@ module Feedkit
         end
       end
 
+      def build_id(base_entry_id)
+        parts = []
+        parts.push(@feed_url)
+        parts.push(base_entry_id)
+        if !entry_id
+          parts.push(url)
+          parts.push(published.iso8601) if published.respond_to?(:iso8601)
+          parts.push(title)
+        end
+        Digest::SHA1.hexdigest(parts.compact.join)
+      end
+
       def parsed_uri(entry_id)
         uri = URI(entry_id)
         result = [uri.userinfo, uri.path, uri.query, uri.fragment].join
         result == "" ? nil : result
-      end
-
-      def source
-        Socket.gethostname
       end
 
     end

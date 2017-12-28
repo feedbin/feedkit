@@ -9,7 +9,7 @@ module Feedkit
       end
 
       def entry_id
-        @tweet.id
+        @tweet.id.to_s
       end
 
       def author

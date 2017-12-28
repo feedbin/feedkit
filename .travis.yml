@@ -4,3 +4,6 @@ sudo: false
 rvm:
   - 2.4.1
   - 2.5.0
+    before_install:
+      # https://github.com/travis-ci/travis-ci/issues/8978
+      - gem update --system

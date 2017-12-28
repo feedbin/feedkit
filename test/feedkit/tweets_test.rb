@@ -2,28 +2,6 @@ require 'test_helper'
 
 class Feedkit::TweetsTest < Minitest::Test
 
-  class TwitterClient
-    def user_timeline(*args)
-      []
-    end
-
-    def user(*args)
-      {name: "name"}
-    end
-
-    def home_timeline(*args)
-      []
-    end
-
-    def list_timeline(*args)
-      []
-    end
-
-    def search(*args)
-      []
-    end
-  end
-
   def test_should_load_tweets
     urls = {
       "https://twitter.com/bsaid"                         => "https://twitter.com/bsaid",
@@ -67,7 +45,28 @@ class Feedkit::TweetsTest < Minitest::Test
       }
       assert_equal(to_feed, feed.feed.to_feed)
     end
+  end
 
+  class TwitterClient
+    def user_timeline(*args)
+      []
+    end
+
+    def user(*args)
+      {name: "name"}
+    end
+
+    def home_timeline(*args)
+      []
+    end
+
+    def list_timeline(*args)
+      []
+    end
+
+    def search(*args)
+      []
+    end
   end
 
 end

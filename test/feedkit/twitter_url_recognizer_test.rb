@@ -58,4 +58,12 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "feedbin", twitter_feed.value
     assert_equal :home, twitter_feed.type
   end
+
+  def test_should_get_screen_name_from_url
+    url = "https://twitter.com?screen_name=bsaid"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, nil)
+    assert twitter_feed.valid?
+    assert_equal "bsaid", twitter_feed.value
+    assert_equal :home, twitter_feed.type
+  end
 end

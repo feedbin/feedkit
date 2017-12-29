@@ -36,7 +36,11 @@ module Feedkit
       return nil if !@url
 
       if @url.host == "twitter.com" && ["", "/"].include?(@url.path)
-        @value = @screen_name || ""
+        if @url.query
+          query = CGI::parse(@url.query)
+          @screen_name = query["screen_name"].first
+        end
+        @value = @screen_name
         @type = :home
       end
     end

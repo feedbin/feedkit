@@ -24,6 +24,14 @@ class Feedkit::TweetsTest < Minitest::Test
     end
   end
 
+  def test_should_have_list_name
+    url = ::Feedkit::TwitterURLRecognizer.new("https://twitter.com/bsaid/lists/conversationlist", "bsaid")
+    feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
+    feed.stub :client, TwitterClient.new do
+      assert_equal "Twitter List: bsaid/conversationlist", feed.feed.title
+    end
+  end
+
   def test_should_have_feed_properties
     input_url = "https://twitter.com/bsaid"
 

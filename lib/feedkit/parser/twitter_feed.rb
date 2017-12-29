@@ -53,7 +53,7 @@ module Feedkit
         when :search
           "Twitter Search: #{@value}"
         when :list
-          "Twitter List: @#{@value}"
+          "Twitter List: #{@value[:user]}/#{@value[:list]}"
         when :home
           "Twitter"
         end

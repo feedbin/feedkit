@@ -22,7 +22,7 @@ module Feedkit
       case @recognized_url.type
       when :user
         tweets = client.user_timeline(@recognized_url.value, default_options.merge(exclude_replies: true))
-        options["twitter_user"] = client.user(@recognized_url.value)
+        options["twitter_user"] = client.user(@recognized_url.value).to_h
       when :search
         tweets = client.search(@recognized_url.value, default_options.merge(result_type: "recent", include_entities: true)).map{|a|a}
       when :list

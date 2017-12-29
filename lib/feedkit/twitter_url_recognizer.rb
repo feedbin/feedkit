@@ -36,7 +36,7 @@ module Feedkit
       return nil if !@url
 
       if @url.host == "twitter.com" && ["", "/"].include?(@url.path)
-        @value = @screen_name
+        @value = @screen_name || ""
         @type = :home
       end
     end

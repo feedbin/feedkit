@@ -2,6 +2,27 @@ require 'test_helper'
 
 class Feedkit::Parser::XMLEntryTest < Minitest::Test
 
+  def test_attributes
+    feed_url = 'http://example.com'
+    entry = OpenStruct.new(
+      entry_id: 'http://example.com/post',
+      author: "author",
+      content: "content",
+      published: Time.now,
+      title: "title",
+      url: "url",
+    )
+
+
+    parsed_entry = ::Feedkit::Parser::XMLEntry.new(entry, feed_url)
+
+    assert_equal(entry.author, parsed_entry.author)
+    assert_equal(entry.content, parsed_entry.content)
+    assert_equal(entry.published, parsed_entry.published)
+    assert_equal(entry.title, parsed_entry.title)
+    assert_equal(entry.url, parsed_entry.url)
+  end
+
   def test_public_id_with_entry_id
     feed_url = 'http://example.com'
     entry = OpenStruct.new(entry_id: 'http://example.com/post')

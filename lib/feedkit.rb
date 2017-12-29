@@ -5,6 +5,7 @@ require 'curb'
 require 'socket'
 require 'cgi'
 
+require "feedkit/core_ext/try"
 require "feedkit/feedjira_extension"
 
 require "feedkit/version"

@@ -8,6 +8,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert twitter_feed.valid?
     assert_equal "bsaid", twitter_feed.value
     assert_equal :user, twitter_feed.type
+    assert_equal(url, twitter_feed.url.to_s)
   end
 
   def test_should_recognize_user
@@ -16,6 +17,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert twitter_feed.valid?
     assert_equal "bsaid", twitter_feed.value
     assert_equal :user, twitter_feed.type
+    assert_equal("https://twitter.com/bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_search_urls

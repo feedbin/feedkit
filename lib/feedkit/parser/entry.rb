@@ -59,7 +59,7 @@ module Feedkit
           parts.push(published.iso8601) if published.respond_to?(:iso8601)
           parts.push(title)
         end
-        Digest::SHA1.hexdigest(parts.compact.join)
+        parts.compact.join
       end
 
       def parsed_uri(entry_id)

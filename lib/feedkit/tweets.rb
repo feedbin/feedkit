@@ -9,10 +9,7 @@ module Feedkit
     end
 
     def feed
-      type = nil
-      tweets = nil
       options = {}
-      url = nil
 
       default_options = {
         count: 100,

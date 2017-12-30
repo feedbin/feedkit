@@ -61,7 +61,10 @@ module Feedkit
 
       query = CGI::parse(@url.query)
       if @url.host == "twitter.com" && @url.path == "/search" && query["q"]
-        @value = query["q"].first
+        @value = {query: query["q"].first}
+        if !query["l"].empty?
+          @value[:lang] = query["l"].first
+        end
         @type = :search
       end
     end
@@ -81,7 +84,7 @@ module Feedkit
 
       paths = @url.path.split("/")
       if @url.host == "twitter.com" && paths.length == 3 && paths[1] == "hashtag"
-        @value = '#' + paths.last
+        @value = {query: '#' + paths.last}
         @type = :search
       end
     end

@@ -21,10 +21,11 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
   end
 
   def test_should_recognize_search_urls
-    url = "https://twitter.com/search?q=feedbin+ben&src=typd"
+    url = "https://twitter.com/search?q=feedbin+ben&l=en&src=typd"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
     assert twitter_feed.valid?
-    assert_equal "feedbin ben", twitter_feed.value
+    assert_equal "feedbin ben", twitter_feed.value[:query]
+    assert_equal "en", twitter_feed.value[:lang]
     assert_equal :search, twitter_feed.type
   end
 
@@ -41,7 +42,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     url = "https://twitter.com/hashtag/feedbin?src=hash"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
     assert twitter_feed.valid?
-    assert_equal "#feedbin", twitter_feed.value
+    assert_equal "#feedbin", twitter_feed.value[:query]
     assert_equal :search, twitter_feed.type
   end
 
@@ -49,7 +50,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     url = "#feedbin"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
     assert twitter_feed.valid?
-    assert_equal "#feedbin", twitter_feed.value
+    assert_equal "#feedbin", twitter_feed.value[:query]
     assert_equal :search, twitter_feed.type
   end
 

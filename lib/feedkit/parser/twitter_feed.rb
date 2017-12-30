@@ -51,7 +51,7 @@ module Feedkit
         when :user
           "@#{@value}"
         when :search
-          "Twitter Search: #{@value}"
+          "Twitter Search: #{@value[:query]}"
         when :list
           "Twitter List: #{@value[:user]}/#{@value[:list]}"
         when :home

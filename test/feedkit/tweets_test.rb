@@ -4,13 +4,13 @@ class Feedkit::TweetsTest < Minitest::Test
 
   def test_should_load_tweets
     urls = {
-      "https://twitter.com/bsaid"                         => "https://twitter.com/bsaid",
-      "@bsaid"                                            => "https://twitter.com/bsaid",
-      "https://twitter.com/search?q=feedbin+ben&src=typd" => "https://twitter.com/search?q=feedbin+ben&src=typd",
-      "https://twitter.com/bsaid/lists/conversationlist"  => "https://twitter.com/bsaid/lists/conversationlist",
-      "https://twitter.com/hashtag/feedbin?src=hash"      => "https://twitter.com/hashtag/feedbin?src=hash",
-      "#feedbin"                                          => "https://twitter.com/hashtag/feedbin",
-      "twitter.com"                                       => "https://twitter.com?screen_name=bsaid",
+      "https://twitter.com/bsaid"                              => "https://twitter.com/bsaid",
+      "@bsaid"                                                 => "https://twitter.com/bsaid",
+      "https://twitter.com/search?q=feedbin+ben&l=en&src=typd" => "https://twitter.com/search?q=feedbin+ben&l=en&src=typd",
+      "https://twitter.com/bsaid/lists/conversationlist"       => "https://twitter.com/bsaid/lists/conversationlist",
+      "https://twitter.com/hashtag/feedbin?src=hash"           => "https://twitter.com/hashtag/feedbin?src=hash",
+      "#feedbin"                                               => "https://twitter.com/hashtag/feedbin",
+      "twitter.com"                                            => "https://twitter.com?screen_name=bsaid",
     }
 
     urls.each do |input_url, output_url|

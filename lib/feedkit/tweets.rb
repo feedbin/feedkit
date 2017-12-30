@@ -25,7 +25,7 @@ module Feedkit
         if @recognized_url.value.has_key?(:lang)
           options[:lang] = @recognized_url.value[:lang]
         end
-        tweets = client.search(@recognized_url.value[:query], options).map{|a|a}
+        tweets = client.search(CGI.escape(@recognized_url.value[:query]), options).map{|a|a}
       when :list
         tweets = client.list_timeline(@recognized_url.value[:user], @recognized_url.value[:list], default_options)
       when :home

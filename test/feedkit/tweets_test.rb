@@ -11,6 +11,7 @@ class Feedkit::TweetsTest < Minitest::Test
       "https://twitter.com/hashtag/feedbin?src=hash"           => "https://twitter.com/hashtag/feedbin?src=hash",
       "#feedbin"                                               => "https://twitter.com/hashtag/feedbin",
       "twitter.com"                                            => "https://twitter.com?screen_name=bsaid",
+      "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd" => "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd",
     }
 
     urls.each do |input_url, output_url|

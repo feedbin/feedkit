@@ -50,7 +50,7 @@ class Feedkit::TweetsTest < Minitest::Test
         site_url: "https://twitter.com/bsaid",
         title: "@bsaid",
         feed_type: :twitter,
-        options: { "twitter_user"=>{name: "name"} }
+        options: { "twitter_user"=>{name: "myname"} }
       }
       assert_equal(to_feed, feed.feed.to_feed)
     end
@@ -62,7 +62,7 @@ class Feedkit::TweetsTest < Minitest::Test
     end
 
     def user(*args)
-      {name: "name"}
+      {name: "myname"}
     end
 
     def home_timeline(*args)

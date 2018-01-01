@@ -2,9 +2,17 @@ module Feedkit
   class TwitterURLRecognizer
     attr_reader :url
 
+    DEFAULT_OPTIONS = {
+      count: 100,
+      tweet_mode: "extended"
+    }
+
     def initialize(url, screen_name)
       @url = format_url(url)
       @screen_name = screen_name
+      @client_args = []
+      @valid = false
+      @type = :twitter
       recognize
     end
 
@@ -12,12 +20,20 @@ module Feedkit
       @type
     end
 
-    def value
-      @value
+    def title
+      @title
+    end
+
+    def client_args
+      @client_args
+    end
+
+    def feed_options
+      @feed_options || {}
     end
 
     def valid?
-      !!(type && value)
+      @valid
     end
 
     private
@@ -36,12 +52,15 @@ module Feedkit
       return nil if !@url
 
       if @url.host == "twitter.com" && ["", "/"].include?(@url.path)
+        @valid = true
         if @url.query
           query = CGI::parse(@url.query)
           @screen_name = query["screen_name"].first
         end
-        @value = @screen_name
-        @type = :home
+        @type = :twitter_home
+        @title = "Twitter"
+        @client_args = [:home_timeline, DEFAULT_OPTIONS]
+        @url.query = "screen_name=#{@screen_name}"
       end
     end
 
@@ -50,8 +69,12 @@ module Feedkit
 
       paths = @url.path.split("/")
       if @url.host == "twitter.com" && paths.length == 2 && @url.path != "/search"
-        @value = paths.last
-        @type = :user
+        @valid = true
+
+        user = paths.last
+        @title = "@#{user}"
+        @client_args = [:user_timeline, user, DEFAULT_OPTIONS.merge(exclude_replies: true)]
+        @feed_options = { "twitter_user" => [:user, user] }
       end
     end
 
@@ -61,21 +84,15 @@ module Feedkit
 
       query = CGI::parse(@url.query)
       if @url.host == "twitter.com" && @url.path == "/search" && query["q"]
-        @value = {query: query["q"].first}
+        @valid = true
+
+        query_string = query["q"].first
+        options = DEFAULT_OPTIONS.merge(result_type: "recent", include_entities: true)
         if !query["l"].empty?
-          @value[:lang] = query["l"].first
+          options[:lang] = query["l"].first
         end
-        @type = :search
-      end
-    end
-
-    def list
-      return nil if !@url
-
-      paths = @url.path.split("/")
-      if @url.host == "twitter.com" && paths.length == 4 && paths[2] == "lists"
-        @value = {user: paths[1], list: paths.last}
-        @type = :list
+        @title = "Twitter Search: #{query_string}"
+        @client_args = [:search, CGI.escape(query_string), options]
       end
     end
 
@@ -84,8 +101,26 @@ module Feedkit
 
       paths = @url.path.split("/")
       if @url.host == "twitter.com" && paths.length == 3 && paths[1] == "hashtag"
-        @value = {query: '#' + paths.last}
-        @type = :search
+        @valid = true
+
+        query = '#' + paths.last
+        @title = "Twitter: #{query}"
+        @client_args = [:search, query, DEFAULT_OPTIONS]
+      end
+    end
+
+    def list
+      return nil if !@url
+
+      paths = @url.path.split("/")
+      if @url.host == "twitter.com" && paths.length == 4 && paths[2] == "lists"
+        @valid = true
+
+        user = paths[1]
+        list = paths.last
+
+        @title = "Twitter List: #{user}/#{list}"
+        @client_args = [:list_timeline, user, list, DEFAULT_OPTIONS]
       end
     end
 

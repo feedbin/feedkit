@@ -6,12 +6,15 @@ module Feedkit
 
       FEED_ATTRIBUTES = %i(etag feed_url last_modified self_url site_url title feed_type options).freeze
 
-      def initialize(url, tweets, type, value, options = {})
-        @url = url
+      def initialize(recognized_url, tweets, options)
+        @recognized_url = recognized_url
         @tweets = tweets
-        @type = type
-        @value = value
+        @url = @recognized_url.url.to_s
         @options = options
+      end
+
+      def title
+        @recognized_url.title
       end
 
       def etag
@@ -35,28 +38,11 @@ module Feedkit
       end
 
       def feed_type
-        if @type == :home
-          :twitter_home
-        else
-          :twitter
-        end
+        @recognized_url.type
       end
 
       def options
         @options
-      end
-
-      def title
-        case @type
-        when :user
-          "@#{@value}"
-        when :search
-          "Twitter Search: #{@value[:query]}"
-        when :list
-          "Twitter List: #{@value[:user]}/#{@value[:list]}"
-        when :home
-          "Twitter"
-        end
       end
 
       def entries

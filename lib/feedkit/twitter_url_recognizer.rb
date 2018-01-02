@@ -68,12 +68,21 @@ module Feedkit
       return nil if !@url
 
       paths = @url.path.split("/")
+      user = nil
+
       if @url.host == "twitter.com" && paths.length == 2 && @url.path != "/search"
+        user = paths.last
+        exclude_replies = true
+      elsif @url.host == "twitter.com" && paths.length == 3 && paths.last == "with_replies"
+        user = paths[1]
+        exclude_replies = false
+      end
+
+      if user
         @valid = true
 
-        user = paths.last
         @title = "@#{user}"
-        @client_args = [:user_timeline, user, DEFAULT_OPTIONS.merge(exclude_replies: true)]
+        @client_args = [:user_timeline, user, DEFAULT_OPTIONS.merge(exclude_replies: exclude_replies)]
         @feed_options = { "twitter_user" => [:user, user] }
       end
     end

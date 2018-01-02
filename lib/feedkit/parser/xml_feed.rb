@@ -22,7 +22,7 @@ module Feedkit
           if feed.url
             url = feed.url
           else
-            if feed_url =~ /feedburner\.com/
+            if feed_url =~ /feedburner\.com/ && feed.entries.first.url
               url = last_effective_url(feed.entries.first.url)
               url = url_from_host(url)
             else

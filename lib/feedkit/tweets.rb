@@ -1,6 +1,5 @@
 module Feedkit
   class Tweets
-    attr_reader :url
 
     def initialize(recognized_url, token, secret)
       @recognized_url = recognized_url

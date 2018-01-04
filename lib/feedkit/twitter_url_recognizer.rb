@@ -51,7 +51,7 @@ module Feedkit
     def home
       return nil if !@url
 
-      if @url.host == "twitter.com" && ["", "/"].include?(@url.path)
+      if host_valid? && ["", "/"].include?(@url.path)
         @valid = true
         if @url.query
           query = CGI::parse(@url.query)
@@ -70,10 +70,10 @@ module Feedkit
       paths = @url.path.split("/")
       user = nil
 
-      if @url.host == "twitter.com" && paths.length == 2 && @url.path != "/search"
+      if host_valid? && paths.length == 2 && @url.path != "/search"
         user = paths.last
         exclude_replies = true
-      elsif @url.host == "twitter.com" && paths.length == 3 && paths.last == "with_replies"
+      elsif host_valid? && paths.length == 3 && paths.last == "with_replies"
         user = paths[1]
         exclude_replies = false
       end
@@ -92,7 +92,7 @@ module Feedkit
       return nil if !@url.query
 
       query = CGI::parse(@url.query)
-      if @url.host == "twitter.com" && @url.path == "/search" && query["q"]
+      if host_valid? && @url.path == "/search" && query["q"]
         @valid = true
 
         query_string = query["q"].first
@@ -109,7 +109,7 @@ module Feedkit
       return nil if !@url
 
       paths = @url.path.split("/")
-      if @url.host == "twitter.com" && paths.length == 3 && paths[1] == "hashtag"
+      if host_valid? && paths.length == 3 && paths[1] == "hashtag"
         @valid = true
 
         query = '#' + paths.last
@@ -122,7 +122,7 @@ module Feedkit
       return nil if !@url
 
       paths = @url.path.split("/")
-      if @url.host == "twitter.com" && paths.length == 4 && paths[2] == "lists"
+      if host_valid? && paths.length == 4 && paths[2] == "lists"
         @valid = true
 
         user = paths[1]
@@ -131,6 +131,10 @@ module Feedkit
         @title = "Twitter List: #{user}/#{list}"
         @client_args = [:list_timeline, user, list, DEFAULT_OPTIONS]
       end
+    end
+
+    def host_valid?
+      @url && ["twitter.com", "mobile.twitter.com"].include?(@url.host)
     end
 
     def format_url(url)

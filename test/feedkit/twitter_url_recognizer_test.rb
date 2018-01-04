@@ -99,6 +99,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal [:home_timeline, {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
     assert_equal({}, twitter_feed.feed_options)
     assert_equal("https://twitter.com?screen_name=bsaid", twitter_feed.url.to_s)
+    assert_equal("bsaid", twitter_feed.screen_name)
   end
 
   def test_should_recognize_with_replies

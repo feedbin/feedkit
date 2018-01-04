@@ -1,6 +1,6 @@
 module Feedkit
   class TwitterURLRecognizer
-    attr_reader :url
+    attr_reader :url, :screen_name
 
     DEFAULT_OPTIONS = {
       count: 100,

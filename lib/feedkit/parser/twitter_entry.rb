@@ -6,10 +6,15 @@ module Feedkit
       def initialize(tweet, feed_url)
         @tweet = tweet
         @feed_url = feed_url
+        ENTRY_ATTRIBUTES.add(:thead_id)
       end
 
       def entry_id
         @tweet.id.to_s
+      end
+
+      def thread_id
+        @tweet.id
       end
 
       def author

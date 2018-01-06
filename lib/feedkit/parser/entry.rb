@@ -2,7 +2,7 @@ module Feedkit
   module Parser
     class Entry
 
-      ENTRY_ATTRIBUTES = %i(author content data entry_id public_id published source title url).freeze
+      ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :source, :title, :url]
 
       def initialize(entry, feed_url, feed = nil)
         @entry = entry

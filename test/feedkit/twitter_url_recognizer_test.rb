@@ -13,6 +13,17 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal(url, twitter_feed.url.to_s)
   end
 
+  def test_should_recognize_mobile_user_urls
+    url = "https://mobile.twitter.com/bsaid"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
+    assert twitter_feed.valid?
+    assert_equal :twitter, twitter_feed.type
+    assert_equal "@bsaid", twitter_feed.title
+    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
+    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal(url, twitter_feed.url.to_s)
+  end
+
   def test_should_recognize_user
     url = "@bsaid"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
@@ -88,6 +99,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal [:home_timeline, {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
     assert_equal({}, twitter_feed.feed_options)
     assert_equal("https://twitter.com?screen_name=bsaid", twitter_feed.url.to_s)
+    assert_equal("bsaid", twitter_feed.screen_name)
   end
 
   def test_should_recognize_with_replies

@@ -101,7 +101,7 @@ module Feedkit
           options[:lang] = query["l"].first
         end
         @title = "Twitter Search: #{query_string}"
-        @client_args = [:search, CGI.escape(query_string), options]
+        @client_args = [:search, query_string, options]
       end
     end
 

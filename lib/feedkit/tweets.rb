@@ -8,7 +8,7 @@ module Feedkit
     end
 
     def feed
-      tweets = client.send(*@recognized_url.client_args).map{|a|a}.reverse
+      tweets = client.send(*@recognized_url.client_args).take(100).to_a.reverse
       options = @recognized_url.feed_options.transform_values do |args|
         client.send(*args).to_h
       end

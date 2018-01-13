@@ -41,7 +41,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert twitter_feed.valid?
     assert_equal :twitter, twitter_feed.type
     assert_equal "Twitter Search: feedbin ben", twitter_feed.title
-    assert_equal [:search, "feedbin+ben", {count: 100, tweet_mode: "extended", result_type: "recent", include_entities: true, lang: "en"}], twitter_feed.client_args
+    assert_equal [:search, "feedbin ben", {count: 100, tweet_mode: "extended", result_type: "recent", include_entities: true, lang: "en"}], twitter_feed.client_args
     assert_equal({}, twitter_feed.feed_options)
     assert_equal(url, twitter_feed.url.to_s)
   end

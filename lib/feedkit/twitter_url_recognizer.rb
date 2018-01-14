@@ -32,6 +32,10 @@ module Feedkit
       @feed_options || {}
     end
 
+    def filters
+      @filters || []
+    end
+
     def valid?
       @valid
     end
@@ -130,6 +134,15 @@ module Feedkit
 
         @title = "Twitter List: #{user}/#{list}"
         @client_args = [:list_timeline, user, list, DEFAULT_OPTIONS]
+        @filters = [
+          {
+            args: [:list_members, user, list, {skip_status: true, include_entities: false, count: 5000}],
+            proc: Proc.new do |tweets, members|
+              valid_ids = members.map(&:id)
+              tweets.select {|tweet| tweet.user && valid_ids.include?(tweet.user.id) }
+            end
+          }
+        ]
       end
     end
 

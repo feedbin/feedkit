@@ -33,6 +33,14 @@ class Feedkit::TweetsTest < Minitest::Test
     end
   end
 
+  def test_should_filter_non_matching_tweets
+    url = ::Feedkit::TwitterURLRecognizer.new("https://twitter.com/bsaid/lists/conversationlist", "bsaid")
+    feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
+    feed.stub :client, TwitterClient.new do
+      assert_equal(1, feed.load_data.tweets.length)
+    end
+  end
+
   def test_should_have_feed_properties
     input_url = "https://twitter.com/bsaid"
 
@@ -70,11 +78,24 @@ class Feedkit::TweetsTest < Minitest::Test
     end
 
     def list_timeline(*args)
-      []
+      [
+        OpenStruct.new(
+          user: OpenStruct.new(id: 1)
+        ),
+        OpenStruct.new(
+          user: OpenStruct.new(id: 2)
+        )
+      ]
     end
 
     def search(*args)
       []
+    end
+
+    def list_members(*args)
+      [
+        OpenStruct.new(id: 1)
+      ]
     end
   end
 

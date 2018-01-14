@@ -8,11 +8,20 @@ module Feedkit
     end
 
     def feed
+      data = load_data
+      Parser::TwitterFeed.new(@recognized_url, data.tweets, data.options)
+    end
+
+    def load_data
       tweets = client.send(*@recognized_url.client_args).take(100).to_a.reverse
       options = @recognized_url.feed_options.transform_values do |args|
         client.send(*args).to_h
       end
-      Parser::TwitterFeed.new(@recognized_url, tweets, options)
+      @recognized_url.filters.each do |filter|
+        data = client.send(*filter[:args])
+        tweets = filter[:proc].call(tweets, data)
+      end
+      OpenStruct.new(tweets: tweets, options: options)
     end
 
     private

@@ -53,6 +53,9 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal "Twitter List: bsaid/conversationlist", twitter_feed.title
     assert_equal [:list_timeline, "bsaid", "conversationlist", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
+    assert_equal 1, twitter_feed.filters.length
+    assert_equal [:list_members, "bsaid", "conversationlist", {:skip_status=>true, :include_entities=>false, :count=>5000}], twitter_feed.filters.first[:args]
+    assert twitter_feed.filters.first.has_key?(:proc)
     assert_equal({}, twitter_feed.feed_options)
     assert_equal(url, twitter_feed.url.to_s)
   end

@@ -49,18 +49,17 @@ module Feedkit
         search if !valid?
         list if !valid?
         hashtag if !valid?
+        # likes if !valid?
       end
     end
 
     def home
       return nil if !@url
 
-      if host_valid? && ["", "/"].include?(@url.path)
+
+      if host_valid? && ["", "/"].include?(@url.path) && screen_names_match?
+        @screen_name = get_screen_name
         @valid = true
-        if @url.query
-          query = CGI::parse(@url.query)
-          @screen_name = query["screen_name"].first
-        end
         @type = :twitter_home
         @title = "Twitter"
         @client_args = [:home_timeline, DEFAULT_OPTIONS]
@@ -146,6 +145,29 @@ module Feedkit
       end
     end
 
+    def likes
+      return nil if !@url
+
+      paths = @url.path.split("/")
+      user = nil
+
+      if host_valid? && paths.length == 3 && paths.join("/") == "/i/likes"
+        if screen_names_match?
+          @url.query = "screen_name=#{get_screen_name}"
+          @type = :twitter_home
+          user = @screen_name
+        end
+      elsif host_valid? && paths.length == 3 && paths.last == "likes"
+        user = paths[1]
+      end
+
+      if user
+        @valid = true
+        @title = "@#{user} Likes"
+        @client_args = [:favorites, user, DEFAULT_OPTIONS]
+      end
+    end
+
     def host_valid?
       @url && ["twitter.com", "mobile.twitter.com"].include?(@url.host)
     end
@@ -168,6 +190,29 @@ module Feedkit
         url = "https://twitter.com/#{user}"
       end
       url
+    end
+
+    def get_screen_name
+      if @url.query
+        query = CGI::parse(@url.query)
+        screen_name = query["screen_name"].first
+      else
+        screen_name = @screen_name
+      end
+    end
+
+    def screen_names_match?
+      if @url.query
+        query = CGI::parse(@url.query)
+        url_screen_name = query["screen_name"].first
+      end
+
+      screen_names_match = true
+      if @screen_name && url_screen_name
+        screen_names_match = (url_screen_name == @screen_name)
+      end
+
+      screen_names_match
     end
 
   end

@@ -10,7 +10,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
     assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
-    assert_equal(url, twitter_feed.url.to_s)
+    assert_equal("#{url}?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_mobile_user_urls
@@ -21,7 +21,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
     assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
-    assert_equal(url, twitter_feed.url.to_s)
+    assert_equal("https://twitter.com/bsaid?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_user
@@ -32,7 +32,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
     assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
-    assert_equal("https://twitter.com/bsaid", twitter_feed.url.to_s)
+    assert_equal("https://twitter.com/bsaid?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_search_urls
@@ -43,7 +43,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "Twitter Search: feedbin ben", twitter_feed.title
     assert_equal [:search, "feedbin ben", {count: 100, tweet_mode: "extended", result_type: "recent", include_entities: true, lang: "en"}], twitter_feed.client_args
     assert_equal({}, twitter_feed.feed_options)
-    assert_equal(url, twitter_feed.url.to_s)
+    assert_equal("https://twitter.com/search?q=feedbin+ben&l=en&src=typd&screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_list_urls
@@ -57,7 +57,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal [:list_members, "bsaid", "conversationlist", {:skip_status=>true, :include_entities=>false, :count=>5000}], twitter_feed.filters.first[:args]
     assert twitter_feed.filters.first.has_key?(:proc)
     assert_equal({}, twitter_feed.feed_options)
-    assert_equal(url, twitter_feed.url.to_s)
+    assert_equal("https://twitter.com/bsaid/lists/conversationlist?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_hashtag_urls
@@ -68,7 +68,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "Twitter: #feedbin", twitter_feed.title
     assert_equal [:search, "#feedbin", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
     assert_equal({}, twitter_feed.feed_options)
-    assert_equal(url, twitter_feed.url.to_s)
+    assert_equal("https://twitter.com/hashtag/feedbin?src=hash&screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_hashtags
@@ -79,7 +79,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "Twitter: #feedbin", twitter_feed.title
     assert_equal [:search, "#feedbin", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
     assert_equal({}, twitter_feed.feed_options)
-    assert_equal("https://twitter.com/hashtag/feedbin", twitter_feed.url.to_s)
+    assert_equal("https://twitter.com/hashtag/feedbin?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
   def test_should_recognize_home
@@ -116,37 +116,31 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal(url, twitter_feed.url.to_s)
   end
 
-  # def test_should_recognize_my_like_urls
-  #   url = "https://twitter.com/i/likes"
-  #   twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
-  #   assert twitter_feed.valid?
-  #   assert_equal :twitter_home, twitter_feed.type
-  #   assert_equal "@bsaid Likes", twitter_feed.title
-  #   assert_equal [:favorites, "bsaid", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
-  #   assert_equal({}, twitter_feed.feed_options)
-  #   assert_equal("#{url}?screen_name=bsaid", twitter_feed.url.to_s)
-  # end
-  #
-  # def test_should_recognize_other_like_urls
-  #   url = "https://twitter.com/bsaid/likes"
-  #   twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, nil)
-  #   assert twitter_feed.valid?
-  #   assert_equal :twitter, twitter_feed.type
-  #   assert_equal "@bsaid Likes", twitter_feed.title
-  #   assert_equal [:favorites, "bsaid", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
-  #   assert_equal({}, twitter_feed.feed_options)
-  #   assert_equal(url, twitter_feed.url.to_s)
-  # end
+  def test_should_recognize_my_like_urls
+    url = "https://twitter.com/i/likes"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
+    assert twitter_feed.valid?
+    assert_equal :twitter, twitter_feed.type
+    assert_equal "@bsaid Likes", twitter_feed.title
+    assert_equal [:favorites, "bsaid", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
+    assert_equal({}, twitter_feed.feed_options)
+    assert_equal("#{url}?screen_name=bsaid", twitter_feed.url.to_s)
+  end
+
+  def test_should_recognize_other_like_urls
+    url = "https://twitter.com/bsaid/likes"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
+    assert twitter_feed.valid?
+    assert_equal :twitter, twitter_feed.type
+    assert_equal "@bsaid Likes", twitter_feed.title
+    assert_equal [:favorites, "bsaid", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
+    assert_equal({}, twitter_feed.feed_options)
+    assert_equal("#{url}?screen_name=bsaid", twitter_feed.url.to_s)
+  end
 
   def test_fail_if_screen_names_not_match
     url = "https://twitter.com/i/likes?screen_name=bsaid"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "other")
-    assert !twitter_feed.valid?, "Feed should not be valid because screen names don't match"
-  end
-
-  def test_fail_if_screen_names_not_match_home
-    url = "https://twitter.com?screen_name=bsaid"
-    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "other")
-    assert !twitter_feed.valid?, "Feed should not be valid because screen names don't match"
+    assert_equal("https://twitter.com/i/likes?screen_name=other", twitter_feed.url.to_s)
   end
 end

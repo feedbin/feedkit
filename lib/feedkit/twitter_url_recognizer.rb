@@ -1,6 +1,6 @@
 module Feedkit
   class TwitterURLRecognizer
-    attr_reader :url, :screen_name
+    attr_reader :screen_name
 
     DEFAULT_OPTIONS = {
       count: 100,
@@ -14,6 +14,22 @@ module Feedkit
       @valid = false
       @type = :twitter
       recognize
+    end
+
+    def url
+      if @screen_name
+        query = {}
+        if @url.query
+          query = CGI::parse(@url.query)
+        end
+        query["screen_name"] = @screen_name
+        @url.query = URI.encode_www_form(query)
+      end
+      @url
+    end
+
+    def screen_name
+      get_screen_name
     end
 
     def type
@@ -49,21 +65,18 @@ module Feedkit
         search if !valid?
         list if !valid?
         hashtag if !valid?
-        # likes if !valid?
+        likes if !valid?
       end
     end
 
     def home
       return nil if !@url
 
-
-      if host_valid? && ["", "/"].include?(@url.path) && screen_names_match?
-        @screen_name = get_screen_name
+      if host_valid? && ["", "/"].include?(@url.path)
         @valid = true
         @type = :twitter_home
         @title = "Twitter"
         @client_args = [:home_timeline, DEFAULT_OPTIONS]
-        @url.query = "screen_name=#{@screen_name}"
       end
     end
 
@@ -152,11 +165,7 @@ module Feedkit
       user = nil
 
       if host_valid? && paths.length == 3 && paths.join("/") == "/i/likes"
-        if screen_names_match?
-          @url.query = "screen_name=#{get_screen_name}"
-          @type = :twitter_home
-          user = @screen_name
-        end
+        user = get_screen_name
       elsif host_valid? && paths.length == 3 && paths.last == "likes"
         user = paths[1]
       end
@@ -169,7 +178,7 @@ module Feedkit
     end
 
     def host_valid?
-      @url && ["twitter.com", "mobile.twitter.com"].include?(@url.host)
+      @url && ["twitter.com"].include?(@url.host)
     end
 
     def format_url(url)
@@ -177,8 +186,17 @@ module Feedkit
       url = shortcut(url)
       if url.start_with?("twitter.com")
         url = "https://#{url}"
+      elsif url.start_with?("mobile.twitter.com")
+        url = "https://#{url}"
       end
-      URI.parse(url)
+
+      url = URI.parse(url)
+
+      if ["twitter.com", "mobile.twitter.com"].include?(url.host)
+        url.host = "twitter.com"
+      end
+
+      url
     rescue
       nil
     end
@@ -193,26 +211,12 @@ module Feedkit
     end
 
     def get_screen_name
-      if @url.query
+      if @screen_name
+        @screen_name
+      elsif @url.query
         query = CGI::parse(@url.query)
-        screen_name = query["screen_name"].first
-      else
-        screen_name = @screen_name
+        query["screen_name"].first
       end
-    end
-
-    def screen_names_match?
-      if @url.query
-        query = CGI::parse(@url.query)
-        url_screen_name = query["screen_name"].first
-      end
-
-      screen_names_match = true
-      if @screen_name && url_screen_name
-        screen_names_match = (url_screen_name == @screen_name)
-      end
-
-      screen_names_match
     end
 
   end

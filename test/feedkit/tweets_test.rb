@@ -4,14 +4,14 @@ class Feedkit::TweetsTest < Minitest::Test
 
   def test_should_load_tweets
     urls = {
-      "https://twitter.com/bsaid"                              => "https://twitter.com/bsaid",
-      "@bsaid"                                                 => "https://twitter.com/bsaid",
-      "https://twitter.com/search?q=feedbin+ben&l=en&src=typd" => "https://twitter.com/search?q=feedbin+ben&l=en&src=typd",
-      "https://twitter.com/bsaid/lists/conversationlist"       => "https://twitter.com/bsaid/lists/conversationlist",
-      "https://twitter.com/hashtag/feedbin?src=hash"           => "https://twitter.com/hashtag/feedbin?src=hash",
-      "#feedbin"                                               => "https://twitter.com/hashtag/feedbin",
+      "https://twitter.com/bsaid"                              => "https://twitter.com/bsaid?screen_name=bsaid",
+      "@bsaid"                                                 => "https://twitter.com/bsaid?screen_name=bsaid",
+      "https://twitter.com/search?q=feedbin+ben&l=en&src=typd" => "https://twitter.com/search?q=feedbin+ben&l=en&src=typd&screen_name=bsaid",
+      "https://twitter.com/bsaid/lists/conversationlist"       => "https://twitter.com/bsaid/lists/conversationlist?screen_name=bsaid",
+      "https://twitter.com/hashtag/feedbin?src=hash"           => "https://twitter.com/hashtag/feedbin?src=hash&screen_name=bsaid",
+      "#feedbin"                                               => "https://twitter.com/hashtag/feedbin?screen_name=bsaid",
       "twitter.com"                                            => "https://twitter.com?screen_name=bsaid",
-      "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd" => "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd",
+      "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd" => "https://twitter.com/search?f=tweets&q=feedbin+near%3A%22San+Francisco%2C+CA%22&src=typd&screen_name=bsaid",
     }
 
     urls.each do |input_url, output_url|
@@ -52,10 +52,10 @@ class Feedkit::TweetsTest < Minitest::Test
 
       to_feed = {
         etag: nil,
-        feed_url: "https://twitter.com/bsaid",
+        feed_url: "https://twitter.com/bsaid?screen_name=bsaid",
         last_modified: nil,
-        self_url: "https://twitter.com/bsaid",
-        site_url: "https://twitter.com/bsaid",
+        self_url: "https://twitter.com/bsaid?screen_name=bsaid",
+        site_url: "https://twitter.com/bsaid?screen_name=bsaid",
         title: "@bsaid",
         feed_type: :twitter,
         options: { "twitter_user"=>{name: "myname"} }

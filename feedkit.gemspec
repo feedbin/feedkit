@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["ben@benubois.com"]
 
   spec.summary       = %q{Parse various sources into consistent format}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = "https://github.com/feedbin/feedkit"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'

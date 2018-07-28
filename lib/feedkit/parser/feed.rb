@@ -4,7 +4,7 @@ module Feedkit
 
       attr_reader :feed, :entries
 
-      FEED_ATTRIBUTES = %i(etag feed_url last_modified self_url site_url title).freeze
+      FEED_ATTRIBUTES = %i(etag feed_url last_modified self_url site_url title options).freeze
 
       def initialize(body, feed_request, base_url = nil)
         @body = body
@@ -22,6 +22,9 @@ module Feedkit
 
       def etag
         @feed_request.etag
+      end
+
+      def options
       end
 
       def to_feed

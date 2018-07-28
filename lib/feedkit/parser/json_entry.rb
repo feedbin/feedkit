@@ -38,6 +38,7 @@ module Feedkit
 
       def data
         value = {}
+        keys = %w{image banner_image author tag}
         if @entry["attachments"].respond_to?(:first) && @entry["attachments"].first.respond_to?(:[])
           value[:enclosure_type]   = @entry["attachments"].first["mime_type"] if @entry["attachments"].first["mime_type"]
           value[:enclosure_url]    = @entry["attachments"].first["url"] if @entry["attachments"].first["url"]
@@ -46,6 +47,8 @@ module Feedkit
           value[:title]            = @entry["attachments"].first["title"] if  @entry["attachments"].first["title"]
         end
         value[:public_id_alt]    = public_id_alt if public_id_alt
+        value[:json_feed] = @entry.slice(*keys)
+        value[:json_feed][:id] = @entry["id"]
         value
       end
 

@@ -66,6 +66,11 @@ module Feedkit
         @valid ||= feed["version"].start_with?("https://jsonfeed.org/version/") && feed["title"]
       end
 
+      def options
+        keys = %w{version title home_page_url feed_url description user_comment next_url icon favicon author name url avatar expired hubs}
+        {json_feed: feed.slice(*keys)}
+      end
+
     end
   end
 end

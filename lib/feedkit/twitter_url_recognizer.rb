@@ -2,11 +2,6 @@ module Feedkit
   class TwitterURLRecognizer
     attr_reader :screen_name
 
-    DEFAULT_OPTIONS = {
-      count: 100,
-      tweet_mode: "extended"
-    }
-
     def initialize(url, screen_name)
       @url = format_url(url)
       @screen_name = screen_name
@@ -76,7 +71,7 @@ module Feedkit
         @valid = true
         @type = :twitter_home
         @title = "Twitter"
-        @client_args = [:home_timeline, DEFAULT_OPTIONS]
+        @client_args = [:home_timeline, { count: 100, tweet_mode: "extended" }]
       end
     end
 
@@ -98,7 +93,7 @@ module Feedkit
         @valid = true
 
         @title = "@#{user}"
-        @client_args = [:user_timeline, user, DEFAULT_OPTIONS.merge(exclude_replies: exclude_replies)]
+        @client_args = [:user_timeline, user, { count: 100, tweet_mode: "extended", exclude_replies: exclude_replies}]
         @feed_options = { "twitter_user" => [:user, user] }
       end
     end
@@ -112,7 +107,7 @@ module Feedkit
         @valid = true
 
         query_string = query["q"].first
-        options = DEFAULT_OPTIONS.merge(result_type: "recent", include_entities: true)
+        options = { count: 100, tweet_mode: "extended", result_type: "recent", include_entities: true}
         if !query["l"].empty?
           options[:lang] = query["l"].first
         end
@@ -130,7 +125,7 @@ module Feedkit
 
         query = '#' + paths.last
         @title = "Twitter: #{query}"
-        @client_args = [:search, query, DEFAULT_OPTIONS]
+        @client_args = [:search, query, { count: 100, tweet_mode: "extended" }]
       end
     end
 
@@ -145,7 +140,7 @@ module Feedkit
         list = paths.last
 
         @title = "Twitter List: #{user}/#{list}"
-        @client_args = [:list_timeline, user, list, DEFAULT_OPTIONS]
+        @client_args = [:list_timeline, user, list, { count: 100, tweet_mode: "extended" }]
         @filters = [
           {
             args: [:list_members, user, list, {skip_status: true, include_entities: false, count: 5000}],
@@ -173,7 +168,7 @@ module Feedkit
       if user
         @valid = true
         @title = "@#{user} Likes"
-        @client_args = [:favorites, user, DEFAULT_OPTIONS]
+        @client_args = [:favorites, user, { count: 100, tweet_mode: "extended" }]
       end
     end
 

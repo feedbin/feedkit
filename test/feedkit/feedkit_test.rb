@@ -9,7 +9,7 @@ class FeedkitTest < Minitest::Test
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
 
-    result = Feedkit.fetch_and_parse(url)
+    result = Feedkit::Feedkit.new().fetch_and_parse(url)
     result.to_feed
   end
 
@@ -17,7 +17,7 @@ class FeedkitTest < Minitest::Test
     url = "http://www.example.com/feed.json"
     stub_request_file("feed.json", url)
 
-    result = Feedkit.fetch_and_parse(url)
+    result = Feedkit::Feedkit.new().fetch_and_parse(url)
     result.to_feed
   end
 

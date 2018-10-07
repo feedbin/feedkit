@@ -28,12 +28,12 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
     }
     stub_request(:get, original_url).to_return(response)
 
-    feed = Feedkit.fetch_and_parse(original_url, base_url: original_url)
+    feed = Feedkit::Feedkit.new().fetch_and_parse(original_url, base_url: original_url)
 
     # public id should be generated from base_url
     assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)
 
-    feed = Feedkit.fetch_and_parse(original_url)
+    feed = Feedkit::Feedkit.new().fetch_and_parse(original_url)
     assert_equal("a6e006a2a819d1dd9186e8f3343fc700e9d0ddf3", feed.entries.first.public_id)
 
   end

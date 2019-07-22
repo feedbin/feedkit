@@ -55,9 +55,9 @@ module Feedkit
       def entries
         @entries ||= begin
           entries = []
-          if feed.entries.respond_to?(:any?) && feed.entries.any?
+          if !feed.entries.nil? && feed.entries.length > 0
             entries = feed.entries.map do |entry|
-              XMLEntry.new(entry, base_url, self)
+              XMLEntry.new(entry, base_url, {itunes_image: itunes_image})
             end
             entries = entries.uniq { |entry| entry.public_id }
           end

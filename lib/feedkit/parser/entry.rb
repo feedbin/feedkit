@@ -4,10 +4,10 @@ module Feedkit
 
       ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :source, :title, :url]
 
-      def initialize(entry, feed_url, feed = nil)
+      def initialize(entry, feed_url, extra_data = {})
         @entry = entry
         @feed_url = feed_url
-        @feed = feed
+        @extra_data = extra_data
       end
 
       def to_entry

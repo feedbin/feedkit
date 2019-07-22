@@ -52,7 +52,7 @@ module Feedkit
       def entries
         @entries ||= begin
           entries = []
-          if feed["items"].respond_to?(:any?) && feed["items"].any?
+          if !feed["items"].nil? && feed["items"].length > 0
             entries = feed["items"].map do |entry|
               JSONEntry.new(entry, base_url, author)
             end

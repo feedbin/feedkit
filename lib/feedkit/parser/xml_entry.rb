@@ -67,8 +67,8 @@ module Feedkit
       end
 
       def itunes_image
-        if @feed.try(:itunes_image)
-          @feed.itunes_image.strip
+        if !@extra_data[:itunes_image].nil?
+          @extra_data[:itunes_image].strip
         elsif @entry.try(:itunes_image)
           @entry.itunes_image.strip
         end

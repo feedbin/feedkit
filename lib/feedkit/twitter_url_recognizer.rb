@@ -100,8 +100,7 @@ module Feedkit
           @filters = [
             {
               proc: Proc.new do |tweets, _|
-                ids = tweets.select {|tweet| tweet.in_reply_to_screen_name == user || tweet.in_reply_to_screen_name.nil? }.map(&:id)
-                tweets.select {|tweet| tweet.retweet? || tweet.in_reply_to_screen_name.nil? || ids.include?(tweet.in_reply_to_status_id) }
+                tweets.reject {|tweet| tweet.user_mentions.first&.indices&.first == 0 }
               end
             }
           ]

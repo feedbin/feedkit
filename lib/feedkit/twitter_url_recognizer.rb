@@ -83,18 +83,29 @@ module Feedkit
 
       if host_valid? && paths.length == 2 && @url.path != "/search"
         user = paths.last
-        exclude_replies = true
+        filter_replies = true
       elsif host_valid? && paths.length == 3 && paths.last == "with_replies"
         user = paths[1]
-        exclude_replies = false
+        filter_replies = false
       end
 
       if user
         @valid = true
 
         @title = "@#{user}"
-        @client_args = [:user_timeline, user, { count: 100, tweet_mode: "extended", exclude_replies: exclude_replies}]
+        @client_args = [:user_timeline, user, { count: 100, tweet_mode: "extended", exclude_replies: false}]
         @feed_options = { "twitter_user" => [:user, user] }
+
+        if filter_replies
+          @filters = [
+            {
+              proc: Proc.new do |tweets, _|
+                ids = tweets.select {|tweet| tweet.in_reply_to_screen_name == user || tweet.in_reply_to_screen_name.nil? }.map(&:id)
+                tweets.select {|tweet| tweet.retweet? || tweet.in_reply_to_screen_name.nil? || ids.include?(tweet.in_reply_to_status_id) }
+              end
+            }
+          ]
+        end
       end
     end
 

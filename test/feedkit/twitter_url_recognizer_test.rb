@@ -8,7 +8,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert twitter_feed.valid?
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
-    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
+    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
     assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal("#{url}?screen_name=bsaid", twitter_feed.url.to_s)
   end
@@ -19,7 +19,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert twitter_feed.valid?
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
-    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
+    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
     assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal("https://twitter.com/bsaid?screen_name=bsaid", twitter_feed.url.to_s)
   end
@@ -30,7 +30,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert twitter_feed.valid?
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
-    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: true}], twitter_feed.client_args
+    assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
     assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal("https://twitter.com/bsaid?screen_name=bsaid", twitter_feed.url.to_s)
   end

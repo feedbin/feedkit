@@ -21,6 +21,9 @@ module Feedkit
         data = (filter[:args]) ? client.send(*filter[:args]) : nil
         tweets = filter[:proc].call(tweets, data)
       end
+      if @recognized_url.title.respond_to?(:call)
+        @recognized_url.title = @recognized_url.title.call(client)
+      end
       OpenStruct.new(tweets: tweets, options: options)
     end
 

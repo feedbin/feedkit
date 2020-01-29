@@ -60,6 +60,19 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal("https://twitter.com/bsaid/lists/conversationlist?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
+  def test_should_recognize_new_list_urls
+    url = "https://twitter.com/i/lists/1179451848094146566"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
+    assert twitter_feed.valid?
+    assert_equal :twitter, twitter_feed.type
+    assert_equal [:list_timeline, 1179451848094146566, {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
+    assert_equal 1, twitter_feed.filters.length
+    assert_equal [:list_members, 1179451848094146566, {:skip_status=>true, :include_entities=>false, :count=>5000}], twitter_feed.filters.first[:args]
+    assert twitter_feed.filters.first.has_key?(:proc)
+    assert_equal({}, twitter_feed.feed_options)
+    assert_equal("https://twitter.com/i/lists/1179451848094146566?screen_name=bsaid", twitter_feed.url.to_s)
+  end
+
   def test_should_recognize_hashtag_urls
     url = "https://twitter.com/hashtag/feedbin?src=hash"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")

@@ -31,6 +31,10 @@ module Feedkit
       @type
     end
 
+    def title=(title)
+      @title = title
+    end
+
     def title
       @title
     end
@@ -150,11 +154,22 @@ module Feedkit
         user = paths[1]
         list = paths.last
 
-        @title = "Twitter List: #{user}/#{list}"
-        @client_args = [:list_timeline, user, list, { count: 100, tweet_mode: "extended" }]
+        if user == "i"
+          list = list.to_i
+          @client_args = [:list_timeline, list, { count: 100, tweet_mode: "extended" }]
+          filter_args = [:list_members, list, {skip_status: true, include_entities: false, count: 5000}]
+          @title = Proc.new do |client|
+            "Twitter list: #{client.list(list).full_name}"
+          end
+        else
+          @client_args = [:list_timeline, user, list, { count: 100, tweet_mode: "extended" }]
+          @title = "Twitter List: #{user}/#{list}"
+          filter_args = [:list_members, user, list, {skip_status: true, include_entities: false, count: 5000}]
+        end
+
         @filters = [
           {
-            args: [:list_members, user, list, {skip_status: true, include_entities: false, count: 5000}],
+            args: filter_args,
             proc: Proc.new do |tweets, members|
               valid_ids = members.map(&:id)
               tweets.select {|tweet| tweet.user && valid_ids.include?(tweet.user.id) }

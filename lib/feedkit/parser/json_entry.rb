@@ -67,10 +67,10 @@ module Feedkit
       def url
         @url = begin
           value = nil
-          if @entry["external_url"]
-            value = @entry["external_url"].strip
-          elsif @entry["url"]
+          if @entry["url"]
             value = @entry["url"].strip
+          elsif @entry["external_url"]
+            value = @entry["external_url"].strip
           end
           value
         end

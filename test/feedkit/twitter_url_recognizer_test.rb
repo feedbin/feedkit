@@ -156,4 +156,15 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "other")
     assert_equal("https://twitter.com/i/likes?screen_name=other", twitter_feed.url.to_s)
   end
+
+  def test_should_recognize_with_replies
+    url = "https://twitter.com/bsaid/status/1237462443183484928"
+    twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, nil)
+    assert twitter_feed.valid?
+    assert_equal :twitter, twitter_feed.type
+    assert_equal "Replies to @bsaid", twitter_feed.title
+    assert_equal [:search, "to:bsaid AND filter:replies", {since_id: 1237462443183484928, result_type: "recent", include_entities: true, tweet_mode: "extended", count: 100}], twitter_feed.client_args
+    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal(url, twitter_feed.url.to_s)
+  end
 end

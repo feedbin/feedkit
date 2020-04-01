@@ -61,6 +61,7 @@ module Feedkit
       @recognize ||= begin
         home if !valid?
         user if !valid?
+        replies if !valid?
         search if !valid?
         list if !valid?
         hashtag if !valid?
@@ -77,6 +78,47 @@ module Feedkit
         @title = "Twitter"
         @client_args = [:home_timeline, { count: 100, tweet_mode: "extended" }]
       end
+    end
+
+    def replies
+      return nil if !@url
+
+      paths = @url.path.split("/")
+      user = nil
+      id = nil
+
+      if host_valid? && paths.length == 4 && paths[2] == "status"
+        user = paths[1]
+        id = paths[3].to_i
+      end
+
+      if user && id
+        @valid = true
+
+        query = "to:#{user} AND filter:replies"
+        options = {
+          since_id: id,
+          result_type: "recent",
+          include_entities: true,
+          tweet_mode: "extended",
+          count: 100,
+        }
+
+        @title = "Replies to @#{user}"
+        @client_args = [:search, query, options]
+        @feed_options = { "twitter_user" => [:user, user] }
+
+        @filters = [
+          {
+            proc: Proc.new do |tweets, _|
+              tweets.select do |tweet|
+                tweet.in_reply_to_status_id? && tweet.in_reply_to_status_id == id
+              end.reverse
+            end
+          }
+        ]
+      end
+
     end
 
     def user

@@ -1,7 +1,5 @@
 require 'feedjira'
-require 'twitter'
-require 'twitter-text'
-require 'curb'
+require 'http'
 require 'socket'
 require 'cgi'
 
@@ -9,6 +7,7 @@ require "feedkit/core_ext/try"
 require "feedkit/feedjira_extension"
 
 require "feedkit/version"
+require "feedkit/errors"
 require "feedkit/request"
 require "feedkit/twitter_url_recognizer"
 require "feedkit/tweets"

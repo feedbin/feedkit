@@ -31,8 +31,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "feedjira", "~> 2.0"
   spec.add_runtime_dependency "curb", "~> 0.9"
-  spec.add_runtime_dependency "twitter", "~> 6.2"
-  spec.add_runtime_dependency "twitter-text", "~> 2.1"
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"

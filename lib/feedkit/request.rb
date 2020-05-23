@@ -1,159 +1,100 @@
+# frozen_string_literal: true
+require "digest"
+require "http"
+require_relative "errors"
+
 module Feedkit
   class Request
 
-    USER_AGENT_DOMAINS = [%r((.+)\.tumblr.com)]
+    attr_reader :url, :client, :options
 
-    attr_reader :url
-
-    def initialize(url:, clean: false, options: {})
+    def initialize(url:, options: {})
+      puts url.inspect
       @url = url
       @options = options
-      if clean
-        @url = clean_url
-      end
+      @client = HTTP
+        .headers(HTTP::Headers::ACCEPT_ENCODING => "gzip")
+        .headers(HTTP::Headers::USER_AGENT => user_agent)
+        .use(:auto_inflate)
+        .follow(max_hops: 5)
+        .timeout(connect: 5, write: 5, read: 20)
     end
 
-    def body
-      @body ||= begin
-        result = response.body_str
-        if gzipped?
-          result = gunzip(result)
-        end
-        result = result.lstrip
-        if result == ""
-          result = nil
-        end
-        result
-      end
+    def self.download(**keyword_args)
+      new(**keyword_args).download
     end
 
-    def format
-      if json_feed?
-        :json_feed
+    def download
+      response = client.get(url)
+
+      if max_size && response.content_length && response.content_length > max_size
+        raise TooLarge, "file is too large (max is #{max_size/1024}KB)"
+      end
+
+      tempfile = Tempfile.new(["feedkit-request"], binmode: true)
+      response.body.each do |chunk|
+        tempfile.write(chunk)
+        if !valid?(chunk)
+          raise NotFeed, "file does not appear to be a feed"
+        end
+        if max_size && tempfile.size > max_size
+          raise TooLarge, "file is too large (max is #{max_size/1024}KB)"
+        end
+      end
+
+      FileUtils.mv tempfile.path, download_file_path
+      download_file_path
+    end
+
+    def valid?(chunk)
+      if @valid.nil?
+        @valid = xml_feed?(chunk)
+        # TODO implement json_feed?
+        # @valid = json_feed?(chunk) if !@valid
       else
-        if Feedjira.parser_for_xml(body)
-          :xml
-        else
-          :html
+        @valid
+      end
+    end
+
+    def xml_feed?(chunk)
+      feed_found = false
+      Nokogiri::XML::Reader(chunk).each do |node|
+        if !feed_found && ["channel", "feed"].include?(node.name)
+          feed_found = true
         end
       end
-    rescue ArgumentError
-      if charset
-        @body = body.force_encoding(charset)
-      else
-        @body = body.force_encoding("ASCII-8BIT")
-      end
-      format
+      feed_found
+    rescue
+      feed_found
     end
 
-    def json_feed?
-      @json_feed ||= headers[:content_type] && headers[:content_type].start_with?("application/json") && body.include?("jsonfeed.org")
+    def user_agent
+      options.fetch(:user_agent, "Feedbin")
     end
 
-    def last_effective_url
-      @last_effective_url ||= response.last_effective_url
+    def download_file_path
+      File.join(Dir.tmpdir, download_file_name)
     end
 
-    def last_modified
-      @last_modified ||= begin
-        Time.parse(headers[:last_modified])
-      rescue
-        nil
+    def download_file_name
+      @download_file_name ||= begin
+        Digest::SHA1.hexdigest([url, username, password].join(":"))
       end
     end
 
-    def etag
-      headers[:etag]
+    def username
+      options[:username]
     end
 
-    def status
-      @status ||= response.response_code
+    def password
+      options[:password]
     end
 
-    def charset
-      @charset ||= begin
-        if headers[:content_type]
-          charset = nil
-          headers[:content_type].split(";").each do |item|
-            item = item.strip
-            if item.start_with?("charset=")
-              charset = item.gsub("charset=", "")
-              charset = charset.strip.upcase
-            end
-          end
-          charset
-        else
-          nil
-        end
-      end
-    end
-
-    def headers
-      @headers ||= begin
-        http_headers = response.header_str.split(/[\r\n]+/).map(&:strip)
-        http_headers = http_headers.flat_map do |string|
-          string.scan(/^(\S+):\s*(.+)/)
-        end
-        http_headers.each_with_object({}) do |(header, value), hash|
-          header = header.downcase.gsub("-", "_").to_sym
-          hash[header] = value
-        end
-      end
-    end
-
-    private
-
-    def gunzip(data)
-      string = StringIO.new(data)
-      gz =  Zlib::GzipReader.new(string)
-      result = gz.read
-      gz.close
-      result
-    rescue Zlib::GzipFile::Error
-      data
-    end
-
-    def gzipped?
-      headers[:content_encoding] =~ /gzip/i
-    end
-
-    def response
-      @response ||= Curl::Easy.perform(@url) do |curl|
-        if @options.has_key?(:if_modified_since)
-          curl.headers["If-Modified-Since"] = @options[:if_modified_since].httpdate
-        end
-        if @options.has_key?(:if_none_match)
-          curl.headers["If-None-Match"] = @options[:if_none_match]
-        end
-        curl.headers["User-Agent"] = user_agent_spoof || @options[:user_agent] || "Feedbin"
-        curl.headers["Accept-Encoding"] = "gzip"
-        curl.connect_timeout = 10
-        curl.follow_location = true
-        curl.max_redirects = 5
-        curl.ssl_verify_peer = false
-        curl.timeout = 20
-      end
-    end
-
-    def clean_url
-      url = @url
-      url = url.strip
-      url = url.gsub(/^ht*p(s?):?\/*/, 'http\1://')
-      url = url.gsub(/^feed:\/\//, 'http://')
-      if url !~ /^https?:\/\//
-        url = "http://#{url}"
-      end
-      url
-    end
-
-    def user_agent_spoof
-      host = URI::parse(@url).host
-      if USER_AGENT_DOMAINS.find { |host_pattern| host =~ host_pattern }
-        "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-      end
-    rescue URI::InvalidURIError
-      nil
+    def max_size
+      options.fetch(:max_size, 10 * 1024 * 1024)
     end
 
   end
 end
+
+

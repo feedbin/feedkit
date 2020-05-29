@@ -26,8 +26,18 @@ module Feedkit
   # raised when response returned 4xx response
   class ClientError < ResponseError; end
 
+  # raised when response returned 401 response
+  class Unauthorized < ClientError
+    def basic_auth?
+      response.headers[:www_authenticate]&.downcase&.strip&.start_with?("basic")
+    end
+  end
+
   # raised when response returned 404 response
   class NotFound < ClientError; end
+
+  # raised when response returned 304 response
+  class NotModified < ClientError; end
 
   # raised when response returned 5xx response
   class ServerError < ResponseError; end
@@ -43,4 +53,7 @@ module Feedkit
 
   # raised when a file does not appear to be a feed
   class NotFeed < Error; end
+
+  # raised when a file does not appear to be a feed or html
+  class NotSupported < Error; end
 end

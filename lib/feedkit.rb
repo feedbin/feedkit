@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
 require 'feedjira'
+require 'twitter'
+require 'twitter-text'
 require 'http'
 require 'socket'
 require 'cgi'
@@ -8,6 +12,8 @@ require "feedkit/feedjira_extension"
 
 require "feedkit/version"
 require "feedkit/errors"
+require "feedkit/response"
+require "feedkit/request_options"
 require "feedkit/request"
 require "feedkit/twitter_url_recognizer"
 require "feedkit/tweets"
@@ -23,6 +29,11 @@ require "feedkit/parser/xml_feed"
 
 module Feedkit
   class Feedkit
+
+    def self.fetch_and_parse(*args)
+      new().fetch_and_parse(*args)
+    end
+
     def fetch_and_parse(url, options = {})
       feed = nil
       feed = twitter_feed(url, options) if feed.nil?

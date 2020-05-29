@@ -1,16 +1,11 @@
+# frozen_string_literal: true
+
 module Feedkit
   module Parser
     class XMLFeed < Feed
 
       def feed
-        parser = Feedjira.parser_for_xml(@body)
-        @feed ||= parser.parse(@body)
-      rescue ArgumentError
-        if @feed_request.charset
-          @feed ||= parser.parse(@body.force_encoding(@feed_request.charset))
-        else
-          @feed ||= parser.parse(@body.force_encoding("ASCII-8BIT"))
-        end
+        @feed ||= Feedjira.parse(@body)
       end
 
       def title

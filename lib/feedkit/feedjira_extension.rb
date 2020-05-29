@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Feedjira::Feed.add_common_feed_element('_feed_id_')
 Feedjira::Feed.add_common_feed_entry_element('_public_id_')
 Feedjira::Feed.add_common_feed_entry_element('_old_public_id_')

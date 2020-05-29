@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Object
   # Invokes the public method whose name goes as first argument just like
   # +public_send+ does, except that if the receiver does not respond to it the

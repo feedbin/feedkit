@@ -1,17 +1,16 @@
-
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "feedkit/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "feedkit"
-  spec.version       = Feedkit::VERSION
-  spec.authors       = ["Ben Ubois"]
-  spec.email         = ["ben@benubois.com"]
+  spec.name = "feedkit"
+  spec.version = Feedkit::VERSION
+  spec.authors = ["Ben Ubois"]
+  spec.email = ["ben@benubois.com"]
 
-  spec.summary       = %q{Parse various sources into consistent format}
-  spec.homepage      = "https://github.com/feedbin/feedkit"
-  spec.license       = "MIT"
+  spec.summary = "Parse various sources into consistent format"
+  spec.homepage = "https://github.com/feedbin/feedkit"
+  spec.license = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
@@ -22,11 +21,11 @@ Gem::Specification.new do |spec|
       "public gem pushes."
   end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+  spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.bindir = "exe"
+  spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "feedjira", "~> 2.0"

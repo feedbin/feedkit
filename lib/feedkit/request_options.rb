@@ -6,15 +6,14 @@ require_relative "errors"
 
 module Feedkit
   class RequestOptions
-
     attr_reader :user_agent, :username, :password
 
     def initialize(etag: nil, last_modified: nil, user_agent: "Feedbin", username: nil, password: nil)
-      @etag          = etag
+      @etag = etag
       @last_modified = last_modified
-      @user_agent    = user_agent
-      @username      = username
-      @password      = password
+      @user_agent = user_agent
+      @username = username
+      @password = password
     end
 
     def if_none_match
@@ -29,8 +28,5 @@ module Feedkit
     rescue
       nil
     end
-
   end
 end
-
-

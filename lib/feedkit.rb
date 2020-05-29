@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'feedjira'
-require 'twitter'
-require 'twitter-text'
-require 'http'
-require 'socket'
-require 'cgi'
+require "feedjira"
+require "twitter"
+require "twitter-text"
+require "http"
+require "socket"
+require "cgi"
 
 require "feedkit/core_ext/try"
 require "feedkit/feedjira_extension"
@@ -29,9 +29,8 @@ require "feedkit/parser/xml_feed"
 
 module Feedkit
   class Feedkit
-
     def self.fetch_and_parse(*args)
-      new().fetch_and_parse(*args)
+      new.fetch_and_parse(*args)
     end
 
     def fetch_and_parse(url, options = {})
@@ -68,5 +67,4 @@ module Feedkit
       feed
     end
   end
-
 end

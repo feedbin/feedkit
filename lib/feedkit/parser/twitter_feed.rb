@@ -3,10 +3,9 @@
 module Feedkit
   module Parser
     class TwitterFeed
+      attr_reader :feed, :entries, :options
 
-      attr_reader :feed, :entries
-
-      FEED_ATTRIBUTES = %i(etag feed_url last_modified self_url site_url title feed_type options).freeze
+      FEED_ATTRIBUTES = %i[etag feed_url last_modified self_url site_url title feed_type options].freeze
 
       def initialize(recognized_url, tweets, options)
         @recognized_url = recognized_url
@@ -43,10 +42,6 @@ module Feedkit
         @recognized_url.type
       end
 
-      def options
-        @options
-      end
-
       def entries
         @entries ||= begin
           @tweets.map do |tweet|
@@ -58,11 +53,10 @@ module Feedkit
       def to_feed
         @to_feed ||= begin
           FEED_ATTRIBUTES.each_with_object({}) do |attribute, hash|
-            hash[attribute] = self.respond_to?(attribute) ? self.send(attribute) : nil
+            hash[attribute] = respond_to?(attribute) ? send(attribute) : nil
           end
         end
       end
-
     end
   end
 end

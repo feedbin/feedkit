@@ -6,10 +6,9 @@ require_relative "errors"
 
 module Feedkit
   class Request
-
     attr_reader :url, :client, :options
 
-    FEED_FORMATS = { xml: "xml", json: "json" }
+    FEED_FORMATS = {xml: "xml", json: "json"}
 
     SUPPORTED_FORMATS = FEED_FORMATS.merge(html: "html")
 
@@ -45,7 +44,7 @@ module Feedkit
       response = request
 
       if response.content_length && response.content_length > MAX_SIZE
-        raise TooLarge, "file is too large (max is #{MAX_SIZE/1024}KB)"
+        raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
       end
 
       tempfile = Tempfile.new("feedkit", binmode: true)
@@ -59,12 +58,12 @@ module Feedkit
           raise NotFeed, "result is not a feed"
         end
 
-        if !SUPPORTED_FORMATS.values.include?(@file_format)
+        unless SUPPORTED_FORMATS.values.include?(@file_format)
           raise NotSupported, "result is not a feed or html"
         end
 
         if tempfile.size > MAX_SIZE
-          raise TooLarge, "file is too large (max is #{MAX_SIZE/1024}KB)"
+          raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
         end
       end
 
@@ -72,7 +71,7 @@ module Feedkit
 
       Response.new(path: tempfile.path, http: response, file_format: @file_format)
     ensure
-      response && response.connection.close
+      response&.connection&.close
     end
 
     def request
@@ -87,12 +86,12 @@ module Feedkit
       args = [response.status.to_s, response]
 
       case response.code
-      when 304      then raise NotModified.new(*args)
-      when 401      then raise Unauthorized.new(*args)
-      when 404      then raise NotFound.new(*args)
+      when 304 then raise NotModified.new(*args)
+      when 401 then raise Unauthorized.new(*args)
+      when 404 then raise NotFound.new(*args)
       when 400..499 then raise ClientError.new(*args)
       when 500..599 then raise ServerError.new(*args)
-      else               raise ResponseError.new(*args)
+      else raise ResponseError.new(*args)
       end
     end
 
@@ -157,5 +156,3 @@ module Feedkit
     end
   end
 end
-
-

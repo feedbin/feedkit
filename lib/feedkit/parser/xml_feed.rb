@@ -3,7 +3,6 @@
 module Feedkit
   module Parser
     class XMLFeed < Feed
-
       def feed
         @feed ||= Feedjira.parse(@body)
       end
@@ -33,7 +32,7 @@ module Feedkit
           url = feed_url
           if feed.self_url
             url = feed.self_url.strip
-            if !url.match(/^http/)
+            unless /^http/.match?(url)
               url = URI.join(feed_url, url).to_s
             end
           end
@@ -51,9 +50,9 @@ module Feedkit
         @entries ||= begin
           entries = []
           if !feed.entries.nil? && feed.entries.length > 0
-            entries = feed.entries.map do |entry|
+            entries = feed.entries.map { |entry|
               XMLEntry.new(entry, base_url, {itunes_image: itunes_image})
-            end
+            }
             entries = entries.uniq { |entry| entry.public_id }
           end
           entries
@@ -61,9 +60,8 @@ module Feedkit
       end
 
       def itunes_image
-        (feed.respond_to?(:itunes_image) && feed.itunes_image) ? feed.itunes_image.strip : nil
+        feed.respond_to?(:itunes_image) && feed.itunes_image ? feed.itunes_image.strip : nil
       end
-
     end
   end
 end

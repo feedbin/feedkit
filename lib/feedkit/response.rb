@@ -1,9 +1,9 @@
 # frozen_string_literal: true
+
 require "digest"
 
 module Feedkit
   class Response
-
     attr_reader :path, :file_format
 
     def initialize(path:, http:, file_format:)
@@ -72,5 +72,3 @@ module Feedkit
     end
   end
 end
-
-

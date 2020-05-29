@@ -1,8 +1,6 @@
-# encoding: utf-8
-require 'test_helper'
+require "test_helper"
 
 class Feedkit::Parser::TwitterEntryTest < Minitest::Test
-
   def setup
     @tweet = load_tweet
     @parsed_tweet = ::Feedkit::Parser::TwitterEntry.new(@tweet, "https://twitter.com/bsaid")
@@ -19,7 +17,7 @@ class Feedkit::Parser::TwitterEntryTest < Minitest::Test
 
   def test_content
     content = <<~EOD
-    "Modeling change over time", not just what we should be doing with our time series, but also with our people. Happy to have @<a class="tweet-url username" href="https://twitter.com/TheKaterTot" rel="nofollow">TheKaterTot</a> on board :) <a href="https://t.co/QljAf1YPyF" rel="nofollow" title="https://twitter.com/TheKaterTot/status/946137848498888704"><span class="tco-ellipsis"><span style='position:absolute;left:-9999px;'>&nbsp;</span></span><span style='position:absolute;left:-9999px;'>https://</span><span class="js-display-url">twitter.com/TheKaterTot/st</span><span style='position:absolute;left:-9999px;'>atus/946137848498888704</span><span class="tco-ellipsis"><span style='position:absolute;left:-9999px;'>&nbsp;</span>…</span></a>
+      "Modeling change over time", not just what we should be doing with our time series, but also with our people. Happy to have @<a class="tweet-url username" href="https://twitter.com/TheKaterTot" rel="nofollow">TheKaterTot</a> on board :) <a href="https://t.co/QljAf1YPyF" rel="nofollow" title="https://twitter.com/TheKaterTot/status/946137848498888704"><span class="tco-ellipsis"><span style='position:absolute;left:-9999px;'>&nbsp;</span></span><span style='position:absolute;left:-9999px;'>https://</span><span class="js-display-url">twitter.com/TheKaterTot/st</span><span style='position:absolute;left:-9999px;'>atus/946137848498888704</span><span class="tco-ellipsis"><span style='position:absolute;left:-9999px;'>&nbsp;</span>…</span></a>
     EOD
     assert_equal content.chomp, @parsed_tweet.content
   end
@@ -52,6 +50,4 @@ class Feedkit::Parser::TwitterEntryTest < Minitest::Test
   def test_public_id_alt
     assert_equal "be9ffed6b370955e8573f8e4236d480d5278fd35", @parsed_tweet.public_id_alt
   end
-
-
 end

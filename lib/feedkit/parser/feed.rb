@@ -3,10 +3,9 @@
 module Feedkit
   module Parser
     class Feed
+      attr_reader :feed, :entries, :options
 
-      attr_reader :feed, :entries
-
-      FEED_ATTRIBUTES = %i(feed_url self_url site_url title options).freeze
+      FEED_ATTRIBUTES = %i[feed_url self_url site_url title options].freeze
 
       def initialize(body, last_effective_url, base_url = nil)
         @body = body
@@ -18,13 +17,10 @@ module Feedkit
         @last_effective_url
       end
 
-      def options
-      end
-
       def to_feed
         @to_feed ||= begin
           FEED_ATTRIBUTES.each_with_object({}) do |attribute, hash|
-            hash[attribute] = self.respond_to?(attribute) ? self.send(attribute) : nil
+            hash[attribute] = respond_to?(attribute) ? send(attribute) : nil
           end
         end
       end
@@ -48,7 +44,6 @@ module Feedkit
           .head(url)
         request.uri.to_s
       end
-
     end
   end
 end

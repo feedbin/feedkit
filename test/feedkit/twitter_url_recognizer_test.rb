@@ -1,7 +1,6 @@
-require 'test_helper'
+require "test_helper"
 
 class Feedkit::TwitterURLRecognizerTest < Minitest::Test
-
   def test_should_recognize_user_urls
     url = "https://twitter.com/bsaid"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, "bsaid")
@@ -9,7 +8,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
-    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal({"twitter_user" => [:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal("#{url}?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
@@ -20,7 +19,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
-    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal({"twitter_user" => [:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal("https://twitter.com/bsaid?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
@@ -31,7 +30,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
-    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal({"twitter_user" => [:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal("https://twitter.com/bsaid?screen_name=bsaid", twitter_feed.url.to_s)
   end
 
@@ -54,7 +53,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal "Twitter List: bsaid/conversationlist", twitter_feed.title
     assert_equal [:list_timeline, "bsaid", "conversationlist", {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
     assert_equal 1, twitter_feed.filters.length
-    assert_equal [:list_members, "bsaid", "conversationlist", {:skip_status=>true, :include_entities=>false, :count=>5000}], twitter_feed.filters.first[:args]
+    assert_equal [:list_members, "bsaid", "conversationlist", {skip_status: true, include_entities: false, count: 5000}], twitter_feed.filters.first[:args]
     assert twitter_feed.filters.first.has_key?(:proc)
     assert_equal({}, twitter_feed.feed_options)
     assert_equal("https://twitter.com/bsaid/lists/conversationlist?screen_name=bsaid", twitter_feed.url.to_s)
@@ -67,7 +66,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal [:list_timeline, 1179451848094146566, {count: 100, tweet_mode: "extended"}], twitter_feed.client_args
     assert_equal 1, twitter_feed.filters.length
-    assert_equal [:list_members, 1179451848094146566, {:skip_status=>true, :include_entities=>false, :count=>5000}], twitter_feed.filters.first[:args]
+    assert_equal [:list_members, 1179451848094146566, {skip_status: true, include_entities: false, count: 5000}], twitter_feed.filters.first[:args]
     assert twitter_feed.filters.first.has_key?(:proc)
     assert_equal({}, twitter_feed.feed_options)
     assert_equal("https://twitter.com/i/lists/1179451848094146566?screen_name=bsaid", twitter_feed.url.to_s)
@@ -125,7 +124,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal "@bsaid", twitter_feed.title
     assert_equal [:user_timeline, "bsaid", {count: 100, tweet_mode: "extended", exclude_replies: false}], twitter_feed.client_args
-    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal({"twitter_user" => [:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal(url, twitter_feed.url.to_s)
   end
 
@@ -164,7 +163,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal :twitter, twitter_feed.type
     assert_equal "Replies to @bsaid", twitter_feed.title
     assert_equal [:search, "to:bsaid AND filter:replies", {since_id: 1237462443183484928, result_type: "recent", include_entities: true, tweet_mode: "extended", count: 100}], twitter_feed.client_args
-    assert_equal({"twitter_user"=>[:user, "bsaid"]}, twitter_feed.feed_options)
+    assert_equal({"twitter_user" => [:user, "bsaid"]}, twitter_feed.feed_options)
     assert_equal(url, twitter_feed.url.to_s)
   end
 end

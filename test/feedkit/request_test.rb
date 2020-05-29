@@ -1,7 +1,6 @@
-require 'test_helper'
+require "test_helper"
 
 class Feedkit::RequestTest < Minitest::Test
-
   def test_should_pass_through_base_url
     first_url = "http://www.example.com"
     last_url = "#{first_url}/final"
@@ -21,7 +20,6 @@ class Feedkit::RequestTest < Minitest::Test
     assert_equal first_url, response.base_url
     assert_equal last_url, response.final_url
   end
-
 
   def test_persistence
     url = "http://www.example.com/"
@@ -106,11 +104,11 @@ class Feedkit::RequestTest < Minitest::Test
     first_url = "http://www.example.com"
 
     urls = {
-      first_url            => "#{first_url}/one",
-      "#{first_url}/one"   => "#{first_url}/two",
-      "#{first_url}/two"   => "#{first_url}/three",
+      first_url => "#{first_url}/one",
+      "#{first_url}/one" => "#{first_url}/two",
+      "#{first_url}/two" => "#{first_url}/three",
       "#{first_url}/three" => "#{first_url}/four",
-      "#{first_url}/four"  => "#{first_url}/five"
+      "#{first_url}/four" => "#{first_url}/five"
     }
 
     urls.each do |url, location|
@@ -126,7 +124,6 @@ class Feedkit::RequestTest < Minitest::Test
     assert_raises Feedkit::TooManyRedirects do
       ::Feedkit::Request.download(first_url, validate: false)
     end
-
   end
 
   def test_should_be_xml
@@ -172,7 +169,6 @@ class Feedkit::RequestTest < Minitest::Test
     response = ::Feedkit::Request.download(first_url, validate: false, on_redirect: on_redirect)
     assert_equal last_url, @location
   end
-
 
   def test_should_get_caching_headers
     url = "http://www.example.com/atom.xml"
@@ -229,7 +225,7 @@ class Feedkit::RequestTest < Minitest::Test
     charset = "utf-8"
     response = {
       headers: {
-        "Content-Type" => "text/html; charset=#{charset}",
+        "Content-Type" => "text/html; charset=#{charset}"
       }
     }
     stub_request(:get, url).to_return(response)
@@ -261,5 +257,4 @@ class Feedkit::RequestTest < Minitest::Test
   #     assert_equal clean, feed_request.url
   #   end
   # end
-
 end

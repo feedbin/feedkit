@@ -2,9 +2,7 @@
 
 module Feedkit
   module Parser
-
     class TwitterEntry < Entry
-
       def initialize(tweet, feed_url)
         @tweet = tweet
         @feed_url = feed_url
@@ -50,13 +48,12 @@ module Feedkit
       end
 
       def main_tweet
-        (@tweet.retweeted_status?) ? @tweet.retweeted_status : @tweet
+        @tweet.retweeted_status? ? @tweet.retweeted_status : @tweet
       end
 
       def tweet_hash
         @tweet_hash ||= main_tweet.to_h
       end
-
     end
   end
 end

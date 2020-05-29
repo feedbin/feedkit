@@ -3,7 +3,6 @@
 module Feedkit
   module Parser
     class Entry
-
       ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :source, :title, :url]
 
       def initialize(entry, feed_url, extra_data = {})
@@ -15,7 +14,7 @@ module Feedkit
       def to_entry
         @to_entry ||= begin
           ENTRY_ATTRIBUTES.each_with_object({}) do |attribute, hash|
-            hash[attribute] = self.respond_to?(attribute) ? self.send(attribute) : nil
+            hash[attribute] = respond_to?(attribute) ? send(attribute) : nil
           end
         end
       end
@@ -56,7 +55,7 @@ module Feedkit
         parts = []
         parts.push(@feed_url)
         parts.push(base_entry_id)
-        if !entry_id
+        unless entry_id
           parts.push(url)
           parts.push(published.iso8601) if published.respond_to?(:iso8601)
           parts.push(title)
@@ -69,7 +68,6 @@ module Feedkit
         result = [uri.userinfo, uri.path, uri.query, uri.fragment].join
         result == "" ? nil : result
       end
-
     end
   end
 end

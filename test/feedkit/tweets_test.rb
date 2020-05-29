@@ -1,23 +1,22 @@
-require 'test_helper'
+require "test_helper"
 
 class Feedkit::TweetsTest < Minitest::Test
-
   def test_should_load_tweets
     urls = {
-      "https://twitter.com/bsaid"                              => "https://twitter.com/bsaid?screen_name=bsaid",
-      "@bsaid"                                                 => "https://twitter.com/bsaid?screen_name=bsaid",
+      "https://twitter.com/bsaid" => "https://twitter.com/bsaid?screen_name=bsaid",
+      "@bsaid" => "https://twitter.com/bsaid?screen_name=bsaid",
       "https://twitter.com/search?q=feedbin+ben&l=en&src=typd" => "https://twitter.com/search?q=feedbin+ben&l=en&src=typd&screen_name=bsaid",
-      "https://twitter.com/bsaid/lists/conversationlist"       => "https://twitter.com/bsaid/lists/conversationlist?screen_name=bsaid",
-      "https://twitter.com/hashtag/feedbin?src=hash"           => "https://twitter.com/hashtag/feedbin?src=hash&screen_name=bsaid",
-      "#feedbin"                                               => "https://twitter.com/hashtag/feedbin?screen_name=bsaid",
-      "twitter.com"                                            => "https://twitter.com?screen_name=bsaid",
-      "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd" => "https://twitter.com/search?f=tweets&q=feedbin+near%3A%22San+Francisco%2C+CA%22&src=typd&screen_name=bsaid",
+      "https://twitter.com/bsaid/lists/conversationlist" => "https://twitter.com/bsaid/lists/conversationlist?screen_name=bsaid",
+      "https://twitter.com/hashtag/feedbin?src=hash" => "https://twitter.com/hashtag/feedbin?src=hash&screen_name=bsaid",
+      "#feedbin" => "https://twitter.com/hashtag/feedbin?screen_name=bsaid",
+      "twitter.com" => "https://twitter.com?screen_name=bsaid",
+      "https://twitter.com/search?f=tweets&q=feedbin%20near%3A%22San%20Francisco%2C%20CA%22&src=typd" => "https://twitter.com/search?f=tweets&q=feedbin+near%3A%22San+Francisco%2C+CA%22&src=typd&screen_name=bsaid"
     }
 
     urls.each do |input_url, output_url|
       url = ::Feedkit::TwitterURLRecognizer.new(input_url, "bsaid")
 
-      feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
+      feed = Feedkit::Tweets.new(url, "asdf", "asdf")
       feed.stub :client, TwitterClient.new do
         assert_equal(output_url, feed.feed.feed_url)
         assert !!feed.feed.title
@@ -27,7 +26,7 @@ class Feedkit::TweetsTest < Minitest::Test
 
   def test_should_have_list_name
     url = ::Feedkit::TwitterURLRecognizer.new("https://twitter.com/bsaid/lists/conversationlist", "bsaid")
-    feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
+    feed = Feedkit::Tweets.new(url, "asdf", "asdf")
     feed.stub :client, TwitterClient.new do
       assert_equal "Twitter List: bsaid/conversationlist", feed.feed.title
     end
@@ -35,7 +34,7 @@ class Feedkit::TweetsTest < Minitest::Test
 
   def test_should_filter_non_matching_tweets
     url = ::Feedkit::TwitterURLRecognizer.new("https://twitter.com/bsaid/lists/conversationlist", "bsaid")
-    feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
+    feed = Feedkit::Tweets.new(url, "asdf", "asdf")
     feed.stub :client, TwitterClient.new do
       assert_equal(1, feed.load_data.tweets.length)
     end
@@ -46,7 +45,7 @@ class Feedkit::TweetsTest < Minitest::Test
 
     url = ::Feedkit::TwitterURLRecognizer.new(input_url, "bsaid")
 
-    feed = Feedkit::Tweets.new(url, 'asdf', 'asdf')
+    feed = Feedkit::Tweets.new(url, "asdf", "asdf")
     feed.stub :client, TwitterClient.new do
       assert !!feed.feed.entries
 
@@ -58,7 +57,7 @@ class Feedkit::TweetsTest < Minitest::Test
         site_url: "https://twitter.com/bsaid?screen_name=bsaid",
         title: "@bsaid",
         feed_type: :twitter,
-        options: { "twitter_user"=>{name: "myname"} }
+        options: {"twitter_user" => {name: "myname"}}
       }
       assert_equal(to_feed, feed.feed.to_feed)
     end
@@ -98,5 +97,4 @@ class Feedkit::TweetsTest < Minitest::Test
       ]
     end
   end
-
 end

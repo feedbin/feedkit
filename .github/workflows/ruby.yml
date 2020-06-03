@@ -15,7 +15,9 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6
-    - name: Install dependencies
+    - name: Install system dependencies
+      run: sudo apt-get --yes install libidn11
+    - name: Install ruby dependencies
       run: bundle install
     - name: Run tests
       run: bundle exec rake

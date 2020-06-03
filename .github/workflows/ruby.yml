@@ -16,7 +16,7 @@ jobs:
       with:
         ruby-version: 2.6
     - name: Install system dependencies
-      run: sudo apt-get --yes install libidn11
+      run: sudo apt-get --yes install libidn11-dev
     - name: Install ruby dependencies
       run: bundle install
     - name: Run tests

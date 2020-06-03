@@ -17,15 +17,7 @@ module Feedkit
     end
 
     def parse
-      @parse ||= begin
-        if xml?
-          Parser::XMLFeed.new(body, @http.uri.to_s)
-        elsif json?
-          Parser::JSONFeed.new(body, @http.uri.to_s)
-        elsif html?
-          Nokogiri::HTML(body)
-        end
-      end
+      @parse ||= Parser.parse!(@file_format, body, url)
     end
 
     def persist!
@@ -41,6 +33,10 @@ module Feedkit
 
     def checksum
       Digest::SHA1.hexdigest(body)[0..6]
+    end
+
+    def url
+      @http.uri.to_s
     end
 
     def last_modified
@@ -60,15 +56,15 @@ module Feedkit
     end
 
     def xml?
-      @file_format == "xml"
+      file_format == "xml"
     end
 
     def json?
-      @file_format == "json"
+      file_format == "json"
     end
 
     def html?
-      @file_format == "html"
+      file_format == "html"
     end
   end
 end

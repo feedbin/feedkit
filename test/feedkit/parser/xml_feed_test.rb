@@ -4,8 +4,8 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
   def test_feed_details
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
-    response = ::Feedkit::Request.download(url: url)
-    result = ::Feedkit::Parser::XMLFeed.new(response.read, request)
+    response = ::Feedkit::Request.download(url)
+    result = response.parse
 
     assert_equal "Feedbin", result.title
     assert_equal ["http://pubsubhubbub.superfeedr.com/"], result.hubs
@@ -27,12 +27,16 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
     }
     stub_request(:get, original_url).to_return(response)
 
-    feed = Feedkit::Feedkit.new.fetch_and_parse(original_url, base_url: original_url)
+    response = ::Feedkit::Request.download(original_url)
 
-    # public id should be generated from base_url
+    # public id should be generated from http://www.example.com/atom.xml
+    assert_equal("a6e006a2a819d1dd9186e8f3343fc700e9d0ddf3", response.parse.entries.first.public_id)
+
+    response = ::Feedkit::Request.download(original_url)
+
+    feed = ::Feedkit::Parser.parse!(response.file_format, response.body, original_url)
+
+    # public id should be generated from http://www.example.com/redirect
     assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)
-
-    feed = Feedkit::Feedkit.new.fetch_and_parse(original_url)
-    assert_equal("a6e006a2a819d1dd9186e8f3343fc700e9d0ddf3", feed.entries.first.public_id)
   end
 end

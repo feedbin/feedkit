@@ -15,7 +15,6 @@ module Feedkit
     MAX_SIZE = 10 * 1024 * 1024
 
     def initialize(url, validate: true, on_redirect: nil, options: RequestOptions.new)
-      puts on_redirect.inspect
       @url = url
       @validate = validate
       @options = options
@@ -51,27 +50,35 @@ module Feedkit
 
       response.body.each do |chunk|
         tempfile.write(chunk)
-
-        @file_format ||= file_format(chunk)
-
-        if validate? && !FEED_FORMATS.values.include?(@file_format)
-          raise NotFeed, "result is not a feed"
-        end
-
-        unless SUPPORTED_FORMATS.values.include?(@file_format)
-          raise NotSupported, "result is not a feed or html"
-        end
-
-        if tempfile.size > MAX_SIZE
-          raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
-        end
+        validate(tempfile)
       end
+
+      validate(tempfile, min_size: 0)
 
       tempfile.close
 
       Response.new(path: tempfile.path, http: response, file_format: @file_format)
     ensure
       response&.connection&.close
+    end
+
+    def validate(tempfile, min_size: 1024)
+      if tempfile.size >= min_size
+        if @file_format.nil?
+          @file_format ||= begin
+            tempfile.rewind
+            file_format(tempfile.read)
+          end
+        end
+
+        if validate? && !FEED_FORMATS.values.include?(@file_format)
+          raise NotFeed, "result is not a feed"
+        end
+      end
+
+      if tempfile.size > MAX_SIZE
+        raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
+      end
     end
 
     def request
@@ -113,7 +120,7 @@ module Feedkit
     end
 
     def file_format(chunk)
-      result = nil
+      result = false
       if !result && xml?(chunk)
         result = SUPPORTED_FORMATS[:xml]
       end
@@ -127,26 +134,27 @@ module Feedkit
     end
 
     def xml?(chunk)
-      feed_found = false
+      found = false
       Nokogiri::XML::Reader(chunk).each do |node|
-        if !feed_found && ["channel", "feed"].include?(node.name)
-          feed_found = true
+        if !found && ["channel", "feed"].include?(node.name)
+          found = true
         end
       end
-      feed_found
+      found
     rescue
-      feed_found
-    end
-
-    def json?(chunk)
-      chunk.include?("https://jsonfeed.org/version/")
-    rescue
-      false
+      found
     end
 
     def html?(chunk)
       document = Nokogiri::HTML.fragment(chunk)
-      document.elements.length > 1
+      elements = document.css("link, meta, a")
+      elements.length > 0
+    rescue
+      false
+    end
+
+    def json?(chunk)
+      chunk.include?("https://jsonfeed.org/version/")
     rescue
       false
     end

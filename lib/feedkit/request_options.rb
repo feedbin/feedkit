@@ -21,12 +21,7 @@ module Feedkit
     end
 
     def if_modified_since
-      unless @last_modified.respond_to?(:httpdate)
-        @last_modified = Time.parse(@last_modified)
-      end
-      {if_modified_since: @last_modified.httpdate}
-    rescue
-      nil
+      {if_modified_since: @last_modified} unless @last_modified.nil?
     end
   end
 end

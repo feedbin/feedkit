@@ -18,6 +18,7 @@ require "feedkit/request"
 require "feedkit/twitter_url_recognizer"
 require "feedkit/tweets"
 
+require "feedkit/parser"
 require "feedkit/parser/entry"
 require "feedkit/parser/feed"
 require "feedkit/parser/json_entry"

@@ -1,9 +1,0 @@
-language: ruby
-cache: bundler
-sudo: false
-matrix:
-  include:
-    - rvm: "2.4.1"
-    - rvm: "2.5.0"
-      before_install:
-        - "gem update --system"

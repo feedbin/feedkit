@@ -13,7 +13,7 @@ module Feedkit
     end
 
     def body
-      @body ||= File.read(@path, binmode: true)
+      @body ||= File.read(@path)
     end
 
     def parse

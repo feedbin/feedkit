@@ -22,5 +22,5 @@ def load_tweet
 end
 
 def load_body(file)
-  File.read(File.join("test", "support", "www", file), binmode: true)
+  File.read(File.join("test", "support", "www", file))
 end

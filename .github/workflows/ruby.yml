@@ -1,10 +1,6 @@
 name: Ruby CI
 
-on:
-  push:
-    branches: [ master, http ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   test:

@@ -46,14 +46,25 @@ module Feedkit
         raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
       end
 
-      tempfile = Tempfile.new("feedkit", binmode: true)
+      tempfile = Tempfile.new
 
       response.body.each do |chunk|
+        if chunk.encoding == Encoding::ASCII_8BIT
+          chunk = chunk.force_encoding(Encoding::UTF_8)
+        elsif chunk.encoding != Encoding::UTF_8
+          chunk = chunk.encode(Encoding::UTF_8, chunk.encoding, invalid: :replace, undef: :replace)
+        end
         tempfile.write(chunk)
-        validate(tempfile)
+
+        validate(tempfile) if @file_format.nil?
+
+        if tempfile.size > MAX_SIZE
+          raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
+        end
       end
 
-      validate(tempfile, min_size: 0)
+
+      validate(tempfile, min_size: 0) if @file_format.nil?
 
       tempfile.close
 
@@ -64,20 +75,14 @@ module Feedkit
 
     def validate(tempfile, min_size: 1024)
       if tempfile.size >= min_size
-        if @file_format.nil?
-          @file_format ||= begin
-            tempfile.rewind
-            file_format(tempfile.read)
-          end
+        @file_format ||= begin
+          tempfile.rewind
+          file_format(tempfile.read)
         end
 
         if validate? && !FEED_FORMATS.values.include?(@file_format)
           raise NotFeed, "result is not a feed"
         end
-      end
-
-      if tempfile.size > MAX_SIZE
-        raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
       end
     end
 
@@ -146,9 +151,7 @@ module Feedkit
     end
 
     def html?(chunk)
-      document = Nokogiri::HTML.fragment(chunk)
-      elements = document.css("link, meta, a")
-      elements.length > 0
+      Nokogiri::HTML.fragment(chunk).css("link, meta, a").length > 0
     rescue
       false
     end

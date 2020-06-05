@@ -24,6 +24,7 @@ module Feedkit
         .headers(user_agent: options.user_agent)
         .timeout(connect: 5, write: 5, read: 5)
         .follow(max_hops: 4, on_redirect: on_redirect)
+        .encoding(Encoding::BINARY)
       if options.username && options.password
         @client = @client.basic_auth(user: options.username, pass: options.password)
       end
@@ -46,44 +47,27 @@ module Feedkit
         raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
       end
 
-      tempfile = Tempfile.new
+      tempfile = Tempfile.new("request", binmode: true)
 
       response.body.each do |chunk|
-        if chunk.encoding == Encoding::ASCII_8BIT
-          chunk = chunk.force_encoding(Encoding::UTF_8)
-        elsif chunk.encoding != Encoding::UTF_8
-          chunk = chunk.encode(Encoding::UTF_8, chunk.encoding, invalid: :replace, undef: :replace)
-        end
         tempfile.write(chunk)
-
-        validate(tempfile) if @file_format.nil?
-
         if tempfile.size > MAX_SIZE
           raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
         end
       end
 
+      tempfile.rewind
 
-      validate(tempfile, min_size: 0) if @file_format.nil?
+      file_format = determine_format(tempfile.read.lstrip)
+      if validate? && !FEED_FORMATS.values.include?(file_format)
+        raise NotFeed, "result is not a feed"
+      end
 
       tempfile.close
 
-      Response.new(path: tempfile.path, http: response, file_format: @file_format)
+      Response.new(path: tempfile.path, http: response, file_format: file_format)
     ensure
       response&.connection&.close
-    end
-
-    def validate(tempfile, min_size: 1024)
-      if tempfile.size >= min_size
-        @file_format ||= begin
-          tempfile.rewind
-          file_format(tempfile.read)
-        end
-
-        if validate? && !FEED_FORMATS.values.include?(@file_format)
-          raise NotFeed, "result is not a feed"
-        end
-      end
     end
 
     def request
@@ -124,46 +108,55 @@ module Feedkit
       end
     end
 
-    def file_format(chunk)
-      result = false
-      if !result && xml?(chunk)
+    def determine_format(data)
+      result = nil
+      if !result && xml?(data)
         result = SUPPORTED_FORMATS[:xml]
       end
-      if !result && json?(chunk)
+      if !result && json?(data)
         result = SUPPORTED_FORMATS[:json]
       end
-      if !result && html?(chunk)
+      if !result && html?(data)
         result = SUPPORTED_FORMATS[:html]
       end
       result
     end
 
-    def xml?(chunk)
+    def xml?(data)
       found = false
-      Nokogiri::XML::Reader(chunk).each do |node|
-        if !found && ["channel", "feed"].include?(node.name)
-          found = true
-        end
-      end
+      xml_reader(data, encoding: nil)
       found
-    rescue
-      found
+    rescue Nokogiri::XML::SyntaxError => e
+      puts e.code
+      puts e.domain
+      puts e.to_s
+      raise
     end
 
-    def html?(chunk)
-      Nokogiri::HTML.fragment(chunk).css("link, meta, a").length > 0
+    def html?(data)
+      Nokogiri::HTML.fragment(data).css("link, meta, a").length > 0
     rescue
       false
     end
 
-    def json?(chunk)
-      chunk.include?("https://jsonfeed.org/version/")
+    def json?(data)
+      JSON.load(data)["version"].include?("https://jsonfeed.org/version/")
     rescue
       false
     end
 
     def validate?
       @validate
+    end
+
+    def xml_reader(data, encoding: nil)
+      args = [data, nil]
+      args.push(encoding) unless encoding.nil?
+      Nokogiri::XML::Reader(*args).each do |node|
+        if !found && ["rss", "atom", "channel", "feed"].include?(node.name)
+          found = true
+        end
+      end
     end
   end
 end

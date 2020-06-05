@@ -7,13 +7,20 @@ module Feedkit
     attr_reader :path, :file_format
 
     def initialize(path:, http:, file_format:)
-      @path = path
+      @path = move(path)
       @http = http
       @file_format = file_format
     end
 
+    def move(path)
+      tempfile = Tempfile.new
+      tempfile.close
+      FileUtils.mv path, tempfile.path
+      tempfile.path
+    end
+
     def body
-      @body ||= File.read(@path)
+      @body ||= File.read(@path, binmode: true)
     end
 
     def parse

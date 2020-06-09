@@ -9,3 +9,11 @@ Feedjira::Feed.add_common_feed_entry_element("self_url")
 
 Feedjira::Parser::Atom.preprocess_xml = true
 Feedjira::Parser::AtomFeedBurner.preprocess_xml = true
+
+Feedjira.configure do |config|
+  config.logger.level = Logger::ERROR
+end
+
+Feedjira.configure do |config|
+  config.parsers = config.parsers - [Feedjira::Parser::JSONFeed]
+end

@@ -8,15 +8,14 @@ module Feedkit
   class Request
     attr_reader :url, :client, :options
 
-    FEED_FORMATS = {xml: "xml", json: "json"}
-
-    SUPPORTED_FORMATS = FEED_FORMATS.merge(html: "html")
-
     MAX_SIZE = 10 * 1024 * 1024
 
-    def initialize(url, validate: true, on_redirect: nil, options: RequestOptions.new)
+    def self.download(url, **args)
+      new(url, **args).download
+    end
+
+    def initialize(url, on_redirect: nil, options: RequestOptions.new)
       @url = url
-      @validate = validate
       @options = options
       @client = HTTP
         .use(:auto_inflate)
@@ -25,6 +24,7 @@ module Feedkit
         .timeout(connect: 5, write: 5, read: 5)
         .follow(max_hops: 4, on_redirect: on_redirect)
         .encoding(Encoding::BINARY)
+
       if options.username && options.password
         @client = @client.basic_auth(user: options.username, pass: options.password)
       end
@@ -36,10 +36,6 @@ module Feedkit
       end
     end
 
-    def self.download(url, **args)
-      new(url, **args).download
-    end
-
     def download
       response = request
 
@@ -48,24 +44,20 @@ module Feedkit
       end
 
       tempfile = Tempfile.new("request", binmode: true)
-
       response.body.each do |chunk|
         tempfile.write(chunk)
+        chunk.clear # deallocate string
         if tempfile.size > MAX_SIZE
           raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
         end
       end
-
+      tempfile.open # flush written content
       tempfile.rewind
 
-      file_format = determine_format(tempfile.read.lstrip)
-      if validate? && !FEED_FORMATS.values.include?(file_format)
-        raise NotFeed, "result is not a feed"
-      end
-
-      tempfile.close
-
-      Response.new(path: tempfile.path, http: response, file_format: file_format)
+      Response.new(tempfile: tempfile, response: response)
+    rescue
+      tempfile&.close
+      raise
     ensure
       response&.connection&.close
     end
@@ -105,57 +97,6 @@ module Feedkit
         raise SSLError, exception.message
       else
         raise exception
-      end
-    end
-
-    def determine_format(data)
-      result = nil
-      if !result && xml?(data)
-        result = SUPPORTED_FORMATS[:xml]
-      end
-      if !result && json?(data)
-        result = SUPPORTED_FORMATS[:json]
-      end
-      if !result && html?(data)
-        result = SUPPORTED_FORMATS[:html]
-      end
-      result
-    end
-
-    def xml?(data)
-      found = false
-      xml_reader(data, encoding: nil)
-      found
-    rescue Nokogiri::XML::SyntaxError => e
-      puts e.code
-      puts e.domain
-      puts e.to_s
-      raise
-    end
-
-    def html?(data)
-      Nokogiri::HTML.fragment(data).css("link, meta, a").length > 0
-    rescue
-      false
-    end
-
-    def json?(data)
-      JSON.load(data)["version"].include?("https://jsonfeed.org/version/")
-    rescue
-      false
-    end
-
-    def validate?
-      @validate
-    end
-
-    def xml_reader(data, encoding: nil)
-      args = [data, nil]
-      args.push(encoding) unless encoding.nil?
-      Nokogiri::XML::Reader(*args).each do |node|
-        if !found && ["rss", "atom", "channel", "feed"].include?(node.name)
-          found = true
-        end
       end
     end
   end

@@ -2,15 +2,30 @@
 
 module Feedkit
   module Parser
-    def parse!(file_format, body, url)
-      if file_format == "xml"
-        Parser::XMLFeed.new(body, url)
-      elsif file_format == "json"
-        Parser::JSONFeed.new(body, url)
-      elsif file_format == "html"
-        Nokogiri::HTML(body)
+    def parse!(body, url:, validate: true)
+
+      result = nil
+
+      feed = Parser::XMLFeed.new(body, url)
+      result = feed if feed.valid?
+
+      if !result
+        feed = Parser::JSONFeed.new(body, url)
+        result = feed if feed.valid?
       end
+
+      if !result && !validate
+        feed = Parser::HTMLDocument.new(body)
+        result = feed if feed.valid?
+      end
+
+      if !result && validate
+        raise NotFeed, "result is not a feed"
+      end
+
+      result
     end
+
     module_function :parse!
   end
 end

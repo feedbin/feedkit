@@ -57,7 +57,9 @@ module Feedkit
       end
 
       def valid?
-        @valid ||= feed["version"].start_with?("https://jsonfeed.org/version/") && feed["title"]
+        feed["version"].start_with?("https://jsonfeed.org/version/") && entries.length > 0
+      rescue
+        false
       end
 
       def options

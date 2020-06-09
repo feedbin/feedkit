@@ -34,7 +34,7 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
 
     response = ::Feedkit::Request.download(original_url)
 
-    feed = ::Feedkit::Parser.parse!(response.file_format, response.body, original_url)
+    feed = ::Feedkit::Parser.parse!(response.body, url: original_url)
 
     # public id should be generated from http://www.example.com/redirect
     assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)

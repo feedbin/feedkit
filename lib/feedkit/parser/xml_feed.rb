@@ -7,6 +7,12 @@ module Feedkit
         @feed ||= Feedjira.parse(@body)
       end
 
+      def valid?
+        entries.length > 0
+      rescue
+        false
+      end
+
       def title
         @title ||= feed.title ? feed.title.strip : "(No title)"
       end
@@ -16,12 +22,7 @@ module Feedkit
           if feed.url
             url = feed.url
           else
-            if feed_url =~ /feedburner\.com/ && feed.entries.first.url
-              url = last_effective_url(feed.entries.first.url)
-              url = url_from_host(url)
-            else
-              url = url_from_host(feed_url)
-            end
+            url = url_from_host(feed_url)
           end
           url
         end

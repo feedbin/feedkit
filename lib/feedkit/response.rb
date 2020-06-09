@@ -4,38 +4,28 @@ require "digest"
 
 module Feedkit
   class Response
-    attr_reader :path, :file_format
+    attr_reader :path
 
-    def initialize(path:, http:, file_format:)
-      @path = move(path)
-      @http = http
-      @file_format = file_format
-    end
-
-    def move(path)
-      tempfile = Tempfile.new
-      tempfile.close
-      FileUtils.mv path, tempfile.path
-      tempfile.path
+    def initialize(tempfile:, response:)
+      @tempfile = tempfile
+      @path = tempfile.path
+      @response = response
     end
 
     def body
       @body ||= File.read(@path, binmode: true)
     end
 
-    def parse
-      @parse ||= Parser.parse!(@file_format, body, url)
+    def parse(validate: true)
+      @parse ||= Parser.parse!(body, url: url, validate: validate)
     end
 
     def persist!
-      FileUtils.mv @path, persisted_path
-      @path = persisted_path
-    end
-
-    def persisted_path
-      @persisted_path ||= begin
-        File.join(Dir.tmpdir, SecureRandom.hex)
+      unless @path == persisted_path
+        FileUtils.mv @path, persisted_path, force: true
+        @path = persisted_path
       end
+      persisted_path
     end
 
     def checksum
@@ -43,35 +33,27 @@ module Feedkit
     end
 
     def url
-      @http.uri.to_s
+      @response.uri.to_s
     end
 
     def last_modified
-      @http.headers[:last_modified]
+      @response.headers[:last_modified]
     end
 
     def etag
-      @http.headers[:etag]
+      @response.headers[:etag]
     end
 
     def status
-      @http.status
+      @response.status
     end
 
-    def charset
-      @http.content_type.charset.downcase
-    end
+    private
 
-    def xml?
-      file_format == "xml"
-    end
-
-    def json?
-      file_format == "json"
-    end
-
-    def html?
-      file_format == "html"
+    def persisted_path
+      @persisted_path ||= begin
+        File.join(Dir.tmpdir, SecureRandom.hex)
+      end
     end
   end
 end

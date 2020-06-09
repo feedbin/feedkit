@@ -6,15 +6,16 @@ class Feedkit::RequestTest < Minitest::Test
     url = "http://www.example.com/atom.xml"
     body = "<a>hello</a><meta />"
     stub_request(:get, url).to_return(body: body)
-    response = ::Feedkit::Request.download(url, validate: false)
-    assert response.html?, "response should be :html"
+    response = ::Feedkit::Request.download(url)
+    document = response.parse(validate: false)
+    assert_instance_of Feedkit::Parser::HTMLDocument, document
   end
 
   def test_persistence
     url = "http://www.example.com/"
     file = "index.html"
     request = stub_request_file(file, url)
-    response = ::Feedkit::Request.download(url, validate: false)
+    response = ::Feedkit::Request.download(url)
 
     path_before = response.path
 
@@ -23,13 +24,15 @@ class Feedkit::RequestTest < Minitest::Test
     assert path_before != response.path, "path should have changed"
 
     assert File.file?(response.path), "file should exist"
+
+    File.unlink(response.path)
   end
 
   def test_get_body
     url = "http://www.example.com/"
     file = "index.html"
     request = stub_request_file(file, url)
-    response = ::Feedkit::Request.download(url, validate: false)
+    response = ::Feedkit::Request.download(url)
     assert_equal load_body(file), response.body
   end
 
@@ -48,7 +51,7 @@ class Feedkit::RequestTest < Minitest::Test
     stub_request(:get, url).to_return(body: body)
 
     assert_raises Feedkit::TooLarge do
-      ::Feedkit::Request.download(url, validate: false)
+      ::Feedkit::Request.download(url)
     end
   end
 
@@ -56,9 +59,10 @@ class Feedkit::RequestTest < Minitest::Test
     url = "http://www.example.com/"
     file = "index.html"
     request = stub_request_file(file, url)
+    response = ::Feedkit::Request.download(url)
 
     assert_raises Feedkit::NotFeed do
-      ::Feedkit::Request.download(url)
+      response.parse
     end
   end
 
@@ -102,7 +106,7 @@ class Feedkit::RequestTest < Minitest::Test
     end
 
     assert_raises Feedkit::TooManyRedirects do
-      ::Feedkit::Request.download(first_url, validate: false)
+      ::Feedkit::Request.download(first_url)
     end
   end
 
@@ -110,14 +114,15 @@ class Feedkit::RequestTest < Minitest::Test
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
     response = ::Feedkit::Request.download(url)
-    assert response.xml?, "response should be :xml_feed"
+    assert_instance_of Feedkit::Parser::XMLFeed, response.parse
   end
 
   def test_should_be_json_feed
     url = "http://www.example.com/feed.json"
     stub_request_file("feed.json", url, {headers: {"Content-Type" => "application/json"}})
     response = ::Feedkit::Request.download(url)
-    assert response.json?, "response should be :json_feed"
+
+    assert_instance_of Feedkit::Parser::JSONFeed, response.parse
   end
 
   def test_should_follow_redirects
@@ -138,7 +143,7 @@ class Feedkit::RequestTest < Minitest::Test
       @location = location
     end
 
-    response = ::Feedkit::Request.download(first_url, validate: false, on_redirect: on_redirect)
+    response = ::Feedkit::Request.download(first_url, on_redirect: on_redirect)
     assert_equal last_url, @location
   end
 
@@ -154,7 +159,7 @@ class Feedkit::RequestTest < Minitest::Test
       }
     }
     stub_request(:get, url).to_return(response)
-    response = ::Feedkit::Request.download(url, validate: false)
+    response = ::Feedkit::Request.download(url)
 
     assert_equal last_modified, response.last_modified
     assert_equal etag, response.etag
@@ -172,7 +177,7 @@ class Feedkit::RequestTest < Minitest::Test
 
     options = ::Feedkit::RequestOptions.new(etag: etag)
     assert_raises Feedkit::NotModified do
-      ::Feedkit::Request.download(url, options: options, validate: false)
+      ::Feedkit::Request.download(url, options: options)
     end
   end
 
@@ -188,29 +193,15 @@ class Feedkit::RequestTest < Minitest::Test
 
     options = ::Feedkit::RequestOptions.new(last_modified: last_modified)
     assert_raises Feedkit::NotModified do
-      ::Feedkit::Request.download(url, options: options, validate: false)
+      ::Feedkit::Request.download(url, options: options)
     end
-  end
-
-  def test_should_get_charset
-    url = "http://www.example.com"
-    charset = "utf-8"
-    response = {
-      headers: {
-        "Content-Type" => "text/html; charset=#{charset}"
-      }
-    }
-    stub_request(:get, url).to_return(response)
-    response = ::Feedkit::Request.download(url, validate: false)
-
-    assert_equal response.charset, charset
   end
 
   def test_should_get_checksum
     url = "http://www.example.com/"
     file = "index.html"
     request = stub_request_file(file, url)
-    response = ::Feedkit::Request.download(url, validate: false)
+    response = ::Feedkit::Request.download(url)
 
     assert_equal "2ff0eb5", response.checksum
   end

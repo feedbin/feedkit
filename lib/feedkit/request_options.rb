@@ -8,7 +8,7 @@ module Feedkit
   class RequestOptions
     attr_reader :user_agent, :username, :password
 
-    def initialize(etag: nil, last_modified: nil, user_agent: "Feedbin", username: nil, password: nil)
+    def initialize(etag: nil, last_modified: nil, checksum: nil, user_agent: "Feedbin", username: nil, password: nil)
       @etag = etag
       @last_modified = last_modified
       @user_agent = user_agent

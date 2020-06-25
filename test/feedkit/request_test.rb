@@ -175,9 +175,8 @@ class Feedkit::RequestTest < Minitest::Test
     }
     stub_request(:get, url).with(request).to_return(status: status)
 
-    options = ::Feedkit::RequestOptions.new(etag: etag)
     assert_raises Feedkit::NotModified do
-      ::Feedkit::Request.download(url, options: options)
+      ::Feedkit::Request.download(url, etag: etag)
     end
   end
 
@@ -191,10 +190,21 @@ class Feedkit::RequestTest < Minitest::Test
     }
     stub_request(:get, url).with(request).to_return(status: status)
 
-    options = ::Feedkit::RequestOptions.new(last_modified: last_modified)
     assert_raises Feedkit::NotModified do
-      ::Feedkit::Request.download(url, options: options)
+      ::Feedkit::Request.download(url, last_modified: last_modified)
     end
+  end
+
+  def test_basic_auth
+    url = "http://www.example.com"
+    last_modified = Time.now.httpdate
+
+    request = {
+      headers: {"Authorization" => "Basic dXNlcm5hbWU6cGFzc3dvcmQ="}
+    }
+    stub_request(:get, url).with(request)
+
+    ::Feedkit::Request.download(url, username: "username", password: "password")
   end
 
   def test_should_get_checksum

@@ -6,7 +6,6 @@ require_relative "errors"
 
 module Feedkit
   class Request
-    attr_reader :url, :client, :options
 
     MAX_SIZE = 10 * 1024 * 1024
 
@@ -14,26 +13,14 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, options: RequestOptions.new)
-      @url = url
-      @options = options
-      @client = HTTP
-        .use(:auto_inflate)
-        .headers(accept_encoding: "gzip")
-        .headers(user_agent: options.user_agent)
-        .timeout(connect: 5, write: 5, read: 5)
-        .follow(max_hops: 4, on_redirect: on_redirect)
-        .encoding(Encoding::BINARY)
-
-      if options.username && options.password
-        @client = @client.basic_auth(user: options.username, pass: options.password)
-      end
-      if options.if_none_match
-        @client = @client.headers(options.if_none_match)
-      end
-      if options.if_modified_since
-        @client = @client.headers(options.if_modified_since)
-      end
+    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, username: nil, password: nil, user_agent: "Feedbin")
+      @url           = url
+      @on_redirect   = on_redirect
+      @user_agent    = user_agent
+      @last_modified = last_modified
+      @etag          = etag
+      @username      = username
+      @password      = password
     end
 
     def download
@@ -62,8 +49,35 @@ module Feedkit
       response&.connection&.close
     end
 
+    def client
+      HTTP
+       .headers(headers)
+       .follow(max_hops: 4, on_redirect: @on_redirect)
+       .timeout(connect: 5, write: 5, read: 5)
+       .encoding(Encoding::BINARY)
+       .use(:auto_inflate)
+       .via("localhost", 8888)
+    end
+
+    def headers
+      Hash.new.tap do |hash|
+        hash[:accept_encoding]   = "gzip, deflate"
+        hash[:user_agent]        = @user_agent
+
+        hash[:if_none_match]     = @etag          unless @etag.nil?
+        hash[:if_modified_since] = @last_modified unless @last_modified.nil?
+        hash[:authorization]     = basic_auth     unless basic_auth.nil?
+      end
+    end
+
+    def basic_auth
+      if @username && @password
+        @basic_auth ||= "Basic " + Base64.strict_encode64("#{@username}:#{@password}")
+      end
+    end
+
     def request
-      response = client.get(url)
+      response = client.get(@url)
       response_error!(response) unless response.status.success?
       response
     rescue => exception

@@ -56,7 +56,6 @@ module Feedkit
        .timeout(connect: 5, write: 5, read: 5)
        .encoding(Encoding::BINARY)
        .use(:auto_inflate)
-       .via("localhost", 8888)
     end
 
     def headers

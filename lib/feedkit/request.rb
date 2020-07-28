@@ -13,14 +13,15 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, username: nil, password: nil, user_agent: "Feedbin")
+    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin")
+      @parsed_url    = BasicAuth.parse(url)
       @url           = url
       @on_redirect   = on_redirect
       @user_agent    = user_agent
       @last_modified = last_modified
       @etag          = etag
-      @username      = username
-      @password      = password
+      @username      = @parsed_url.username
+      @password      = @parsed_url.password
     end
 
     def download
@@ -41,7 +42,7 @@ module Feedkit
       tempfile.open # flush written content
       tempfile.rewind
 
-      Response.new(tempfile: tempfile, response: response)
+      Response.new(tempfile: tempfile, response: response, url: @url)
     rescue
       tempfile&.close
       raise
@@ -76,7 +77,7 @@ module Feedkit
     end
 
     def request
-      response = client.get(@url)
+      response = client.get(@parsed_url.url)
       response_error!(response) unless response.status.success?
       response
     rescue => exception

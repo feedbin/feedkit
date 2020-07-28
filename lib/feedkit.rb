@@ -12,6 +12,7 @@ require "feedkit/feedjira_extension"
 
 require "feedkit/version"
 require "feedkit/errors"
+require "feedkit/basic_auth"
 require "feedkit/response"
 require "feedkit/request"
 require "feedkit/twitter_url_recognizer"

@@ -6,10 +6,11 @@ module Feedkit
   class Response
     attr_reader :path
 
-    def initialize(tempfile:, response:)
+    def initialize(tempfile:, response:, url:)
       @tempfile = tempfile
-      @path = tempfile.path
+      @path     = tempfile.path
       @response = response
+      @url      = url
     end
 
     def body
@@ -17,7 +18,7 @@ module Feedkit
     end
 
     def parse(validate: true)
-      @parse ||= Parser.parse!(body, url: url, validate: validate)
+      @parse ||= Parser.parse!(body, url: @url, validate: validate)
     end
 
     def persist!
@@ -30,10 +31,6 @@ module Feedkit
 
     def checksum
       Digest::SHA1.hexdigest(body)[0..6]
-    end
-
-    def url
-      @response.uri.to_s
     end
 
     def last_modified

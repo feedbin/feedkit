@@ -38,7 +38,7 @@ class Feedkit::RequestTest < Minitest::Test
 
   def test_should_raise_invalid_url
     assert_raises Feedkit::InvalidUrl do
-      ::Feedkit::Request.download("XXX")
+      ::Feedkit::Request.download("")
     end
   end
 
@@ -196,15 +196,12 @@ class Feedkit::RequestTest < Minitest::Test
   end
 
   def test_basic_auth
-    url = "http://www.example.com"
-    last_modified = Time.now.httpdate
-
     request = {
       headers: {"Authorization" => "Basic dXNlcm5hbWU6cGFzc3dvcmQ="}
     }
-    stub_request(:get, url).with(request)
+    stub_request(:get, "http://www.example.com").with(request)
 
-    ::Feedkit::Request.download(url, username: "username", password: "password")
+    ::Feedkit::Request.download("http://username:password@www.example.com")
   end
 
   def test_should_get_checksum

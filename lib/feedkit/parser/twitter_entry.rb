@@ -23,7 +23,7 @@ module Feedkit
 
       def content
         if tweet_hash[:entities]
-          Twitter::TwitterText::Autolink.auto_link_with_json(tweet_hash[:full_text], tweet_hash[:entities])
+          Twitter::TwitterText::Autolink.auto_link_with_json(tweet_hash[:full_text], tweet_hash[:entities], invisible_tag_attrs: "")
         else
           tweet_hash[:full_text]
         end

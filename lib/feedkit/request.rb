@@ -15,7 +15,6 @@ module Feedkit
 
     def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin")
       @parsed_url    = BasicAuth.parse(url)
-      @url           = url
       @on_redirect   = on_redirect
       @user_agent    = user_agent
       @last_modified = last_modified
@@ -42,7 +41,7 @@ module Feedkit
       tempfile.open # flush written content
       tempfile.rewind
 
-      Response.new(tempfile: tempfile, response: response, url: @url)
+      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url)
     rescue
       tempfile&.close
       raise

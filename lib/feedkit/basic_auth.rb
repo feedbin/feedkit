@@ -38,25 +38,21 @@ module Feedkit
         credentials = credentials.split(":")
         @username = credentials.shift
         @password = credentials.join(":")
-      end
 
-      if host
         uri_parts[2] = host
       end
-
 
       @url = uri_parts.join("/")
 
       self
     end
 
-
     def username
-      decode(@username)
+      @username ||= decode(@username)
     end
 
     def password
-      decode(@password)
+      @password ||= decode(@password)
     end
 
     def decode(data)

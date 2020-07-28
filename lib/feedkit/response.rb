@@ -6,11 +6,11 @@ module Feedkit
   class Response
     attr_reader :path
 
-    def initialize(tempfile:, response:, url:)
-      @tempfile = tempfile
-      @path     = tempfile.path
-      @response = response
-      @url      = url
+    def initialize(tempfile:, response:, parsed_url:)
+      @tempfile   = tempfile
+      @path       = tempfile.path
+      @response   = response
+      @parsed_url = parsed_url
     end
 
     def body
@@ -18,7 +18,7 @@ module Feedkit
     end
 
     def parse(validate: true)
-      @parse ||= Parser.parse!(body, url: @url, validate: validate)
+      @parse ||= Parser.parse!(body, url: url, validate: validate)
     end
 
     def persist!
@@ -39,6 +39,20 @@ module Feedkit
 
     def etag
       @response.headers[:etag]
+    end
+
+    def url
+      result = @response.uri.to_s
+      if @parsed_url.username && @parsed_url.password
+        parts = result.split("/")
+        parts[2] = credentials.to_s + parts[2]
+        result = parts.join("/")
+      end
+      result
+    end
+
+    def credentials
+      "#{@parsed_url.username}:#{@parsed_url.password}@"
     end
 
     def status

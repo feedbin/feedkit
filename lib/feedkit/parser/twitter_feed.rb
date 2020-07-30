@@ -45,6 +45,10 @@ module Feedkit
         @options
       end
 
+      def hubs
+        nil
+      end
+
       def entries
         @entries ||= begin
           @tweets.map do |tweet|

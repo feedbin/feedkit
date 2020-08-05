@@ -18,17 +18,13 @@ module Feedkit
       end
 
       def self_url
-        @self_url ||= begin
-          if feed["feed_url"]
-            url = feed["feed_url"]
-            unless /^http/.match?(url)
-              url = URI.join(feed_url, url).to_s
-            end
-          end
-          url
-        rescue
-         feed_url
+        url = feed["feed_url"]
+        unless /^http/.match?(url)
+          url = URI.join(feed_url, url).to_s
         end
+        url
+      rescue
+        nil
       end
 
       def hubs

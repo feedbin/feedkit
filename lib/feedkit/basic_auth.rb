@@ -1,7 +1,7 @@
 module Feedkit
   class BasicAuth
 
-    attr_reader :url, :username, :password
+    attr_reader :url
 
     def initialize(data)
       @data = data
@@ -34,10 +34,9 @@ module Feedkit
         host_parts = host.split("@")
         credentials = host_parts.shift
         host = host_parts.join("@")
-
         credentials = credentials.split(":")
-        @username = credentials.shift
-        @password = credentials.join(":")
+        @base_username = credentials.shift
+        @base_password = credentials.join(":")
 
         uri_parts[2] = host
       end
@@ -48,15 +47,15 @@ module Feedkit
     end
 
     def username
-      @username ||= decode(@username)
+      @username ||= decode(@base_username)
     end
 
     def password
-      @password ||= decode(@password)
+      @password ||= decode(@base_password)
     end
 
     def decode(data)
-      data && URI.unescape(data)
+      data && URI.decode_www_form_component(data)
     end
 
   end

@@ -11,4 +11,11 @@ class Feedkit::BasicAuthTest < Minitest::Test
     assert_equal(password, result.password)
     assert_equal("http://www.example.com/atom.xml", result.url)
   end
+
+  def test_should_retain_trailing_slash
+    url = "http://www.example.com/feed/"
+
+    result = Feedkit::BasicAuth.parse(url)
+    assert_equal(url, result.url)
+  end
 end

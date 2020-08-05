@@ -28,13 +28,13 @@ module Feedkit
         uri = "http://#{uri}"
       end
 
-      uri_parts = uri.split("/")
+      uri_parts = uri.split("/", -1)
       host = uri_parts[2]
       if host && host.include?(":") && host.include?("@")
-        host_parts = host.split("@")
+        host_parts = host.split("@", -1)
         credentials = host_parts.shift
         host = host_parts.join("@")
-        credentials = credentials.split(":")
+        credentials = credentials.split(":", -1)
         @base_username = credentials.shift
         @base_password = credentials.join(":")
 

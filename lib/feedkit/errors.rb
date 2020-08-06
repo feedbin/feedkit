@@ -51,6 +51,9 @@ module Feedkit
   # raised when an SSL error was raised
   class SSLError < Error; end
 
+  # raised when a compression error was raised
+  class ZlibError < Error; end
+
   # raised when a file does not appear to be a feed
   class NotFeed < Error; end
 

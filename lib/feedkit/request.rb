@@ -108,6 +108,8 @@ module Feedkit
         raise TooManyRedirects, exception.message
       when OpenSSL::SSL::SSLError
         raise SSLError, exception.message
+      when Zlib::BufError
+        raise ZlibError, exception.message
       else
         raise exception
       end

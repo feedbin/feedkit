@@ -1,8 +1,8 @@
+# frozen_string_literal: true
+
 module Feedkit
   module Parser
-
     class XMLEntry < Entry
-
       def entry_id
         @entry.entry_id ? @entry.entry_id.strip : nil
       end
@@ -41,16 +41,16 @@ module Feedkit
 
       def data
         value = {}
-        value[:enclosure_type]   = @entry.enclosure_type if @entry.try(:enclosure_type)
-        value[:enclosure_url]    = @entry.enclosure_url if @entry.try(:enclosure_url)
+        value[:enclosure_type] = @entry.enclosure_type if @entry.try(:enclosure_type)
+        value[:enclosure_url] = @entry.enclosure_url if @entry.try(:enclosure_url)
         value[:enclosure_length] = @entry.enclosure_length if @entry.try(:enclosure_length)
-        value[:itunes_duration]  = @entry.itunes_duration if @entry.try(:itunes_duration)
-        value[:itunes_subtitle]  = @entry.itunes_subtitle if @entry.try(:itunes_subtitle)
-        value[:itunes_image]     = itunes_image
+        value[:itunes_duration] = @entry.itunes_duration if @entry.try(:itunes_duration)
+        value[:itunes_subtitle] = @entry.itunes_subtitle if @entry.try(:itunes_subtitle)
+        value[:itunes_image] = itunes_image
         value[:youtube_video_id] = @entry.youtube_video_id if @entry.try(:youtube_video_id)
-        value[:media_width]      = @entry.media_width if @entry.try(:media_width)
-        value[:media_height]     = @entry.media_height if @entry.try(:media_height)
-        value[:public_id_alt]    = public_id_alt if public_id_alt
+        value[:media_width] = @entry.media_width if @entry.try(:media_width)
+        value[:media_height] = @entry.media_height if @entry.try(:media_height)
+        value[:public_id_alt] = public_id_alt if public_id_alt
         value
       end
 
@@ -73,7 +73,6 @@ module Feedkit
           @entry.itunes_image.strip
         end
       end
-
     end
   end
 end

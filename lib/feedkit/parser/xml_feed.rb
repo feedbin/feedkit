@@ -1,16 +1,16 @@
+# frozen_string_literal: true
+
 module Feedkit
   module Parser
     class XMLFeed < Feed
-
       def feed
-        parser = Feedjira.parser_for_xml(@body)
-        @feed ||= parser.parse(@body)
-      rescue ArgumentError
-        if @feed_request.charset
-          @feed ||= parser.parse(@body.force_encoding(@feed_request.charset))
-        else
-          @feed ||= parser.parse(@body.force_encoding("ASCII-8BIT"))
-        end
+        @feed ||= Feedjira.parse(@body)
+      end
+
+      def valid?
+        entries.length > 0
+      rescue
+        false
       end
 
       def title
@@ -22,30 +22,20 @@ module Feedkit
           if feed.url
             url = feed.url
           else
-            if feed_url =~ /feedburner\.com/ && feed.entries.first.url
-              url = last_effective_url(feed.entries.first.url)
-              url = url_from_host(url)
-            else
-              url = url_from_host(feed_url)
-            end
+            url = url_from_host(feed_url)
           end
           url
         end
       end
 
       def self_url
-        @self_url ||= begin
-          url = feed_url
-          if feed.self_url
-            url = feed.self_url.strip
-            if !url.match(/^http/)
-              url = URI.join(feed_url, url).to_s
-            end
-          end
-          url
-        rescue
-          feed_url
+        url = feed.self_url.strip
+        unless /^http/.match?(url)
+          url = URI.join(feed_url, url).to_s
         end
+        url
+      rescue
+        nil
       end
 
       def hubs
@@ -56,9 +46,9 @@ module Feedkit
         @entries ||= begin
           entries = []
           if !feed.entries.nil? && feed.entries.length > 0
-            entries = feed.entries.map do |entry|
+            entries = feed.entries.map { |entry|
               XMLEntry.new(entry, base_url, {itunes_image: itunes_image})
-            end
+            }
             entries = entries.uniq { |entry| entry.public_id }
           end
           entries
@@ -66,9 +56,8 @@ module Feedkit
       end
 
       def itunes_image
-        (feed.respond_to?(:itunes_image) && feed.itunes_image) ? feed.itunes_image.strip : nil
+        feed.respond_to?(:itunes_image) && feed.itunes_image ? feed.itunes_image.strip : nil
       end
-
     end
   end
 end

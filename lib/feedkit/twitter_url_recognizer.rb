@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 module Feedkit
   class TwitterURLRecognizer
-    attr_reader :screen_name
+    attr_reader :screen_name, :type, :client_args
+    attr_accessor :title
 
     def initialize(url, screen_name)
       @url = format_url(url)
@@ -15,7 +18,7 @@ module Feedkit
       if @screen_name
         query = {}
         if @url.query
-          query = CGI::parse(@url.query)
+          query = CGI.parse(@url.query)
         end
         query["screen_name"] = @screen_name
         @url.query = URI.encode_www_form(query)
@@ -25,22 +28,6 @@ module Feedkit
 
     def screen_name
       get_screen_name
-    end
-
-    def type
-      @type
-    end
-
-    def title=(title)
-      @title = title
-    end
-
-    def title
-      @title
-    end
-
-    def client_args
-      @client_args
     end
 
     def feed_options
@@ -59,29 +46,29 @@ module Feedkit
 
     def recognize
       @recognize ||= begin
-        home if !valid?
-        user if !valid?
-        replies if !valid?
-        search if !valid?
-        list if !valid?
-        hashtag if !valid?
-        likes if !valid?
+        home unless valid?
+        user unless valid?
+        replies unless valid?
+        search unless valid?
+        list unless valid?
+        hashtag unless valid?
+        likes unless valid?
       end
     end
 
     def home
-      return nil if !@url
+      return nil unless @url
 
       if host_valid? && ["", "/"].include?(@url.path)
         @valid = true
         @type = :twitter_home
         @title = "Twitter"
-        @client_args = [:home_timeline, { count: 100, tweet_mode: "extended" }]
+        @client_args = [:home_timeline, {count: 100, tweet_mode: "extended"}]
       end
     end
 
     def replies
-      return nil if !@url
+      return nil unless @url
 
       paths = @url.path.split("/")
       user = nil
@@ -101,28 +88,27 @@ module Feedkit
           result_type: "recent",
           include_entities: true,
           tweet_mode: "extended",
-          count: 100,
+          count: 100
         }
 
         @title = "Replies to @#{user}"
         @client_args = [:search, query, options]
-        @feed_options = { "twitter_user" => [:user, user] }
+        @feed_options = {"twitter_user" => [:user, user]}
 
         @filters = [
           {
-            proc: Proc.new do |tweets, _|
-              tweets.select do |tweet|
+            proc: proc do |tweets, _|
+              tweets.select { |tweet|
                 tweet.in_reply_to_status_id? && tweet.in_reply_to_status_id == id
-              end.reverse
+              }.reverse
             end
           }
         ]
       end
-
     end
 
     def user
-      return nil if !@url
+      return nil unless @url
 
       paths = @url.path.split("/")
       user = nil
@@ -139,15 +125,15 @@ module Feedkit
         @valid = true
 
         @title = "@#{user}"
-        @client_args = [:user_timeline, user, { count: 100, tweet_mode: "extended", exclude_replies: false}]
-        @feed_options = { "twitter_user" => [:user, user] }
+        @client_args = [:user_timeline, user, {count: 100, tweet_mode: "extended", exclude_replies: false}]
+        @feed_options = {"twitter_user" => [:user, user]}
 
         if filter_replies
           @filters = [
             {
-              proc: Proc.new do |tweets, _|
-                tweets.select {|tweet| tweet.retweet? || tweet.in_reply_to_screen_name.nil? || tweet.in_reply_to_screen_name == user }
-                  .reject {|tweet| tweet.user_mentions.first&.indices&.first == 0 }
+              proc: proc do |tweets, _|
+                tweets.select { |tweet| tweet.retweet? || tweet.in_reply_to_screen_name.nil? || tweet.in_reply_to_screen_name == user }
+                  .reject { |tweet| tweet.user_mentions.first&.indices&.first == 0 }
               end
             }
           ]
@@ -156,16 +142,16 @@ module Feedkit
     end
 
     def search
-      return nil if !@url
-      return nil if !@url.query
+      return nil unless @url
+      return nil unless @url.query
 
-      query = CGI::parse(@url.query)
+      query = CGI.parse(@url.query)
       if host_valid? && @url.path == "/search" && query["q"]
         @valid = true
 
         query_string = query["q"].first
-        options = { count: 100, tweet_mode: "extended", result_type: "recent", include_entities: true}
-        if !query["l"].empty?
+        options = {count: 100, tweet_mode: "extended", result_type: "recent", include_entities: true}
+        unless query["l"].empty?
           options[:lang] = query["l"].first
         end
         @title = "Twitter Search: #{query_string}"
@@ -174,20 +160,20 @@ module Feedkit
     end
 
     def hashtag
-      return nil if !@url
+      return nil unless @url
 
       paths = @url.path.split("/")
       if host_valid? && paths.length == 3 && paths[1] == "hashtag"
         @valid = true
 
-        query = '#' + paths.last
+        query = "#" + paths.last
         @title = "Twitter: #{query}"
-        @client_args = [:search, query, { count: 100, tweet_mode: "extended" }]
+        @client_args = [:search, query, {count: 100, tweet_mode: "extended"}]
       end
     end
 
     def list
-      return nil if !@url
+      return nil unless @url
 
       paths = @url.path.split("/")
       if host_valid? && paths.length == 4 && paths[2] == "lists"
@@ -196,15 +182,17 @@ module Feedkit
         user = paths[1]
         list = paths.last
 
+        # send fake owner_id so the twitter gem doesn't mistakenly call verify_user
         if user == "i"
           list = list.to_i
-          @client_args = [:list_timeline, list, { count: 100, tweet_mode: "extended" }]
-          filter_args = [:list_members, list, {skip_status: true, include_entities: false, count: 5000}]
-          @title = Proc.new do |client|
-            "Twitter list: #{client.list(list).full_name}"
-          end
+          @client_args = [:list_timeline, list, {owner_id: 1, count: 100, tweet_mode: "extended"}]
+          filter_args = [:list_members, list, {owner_id: 1, skip_status: true, include_entities: false, count: 5000}]
+          @title = proc { |client|
+            name = client.list(list, {owner_id: 1}).full_name
+            "Twitter list: #{name}"
+          }
         else
-          @client_args = [:list_timeline, user, list, { count: 100, tweet_mode: "extended" }]
+          @client_args = [:list_timeline, user, list, {count: 100, tweet_mode: "extended"}]
           @title = "Twitter List: #{user}/#{list}"
           filter_args = [:list_members, user, list, {skip_status: true, include_entities: false, count: 5000}]
         end
@@ -212,9 +200,9 @@ module Feedkit
         @filters = [
           {
             args: filter_args,
-            proc: Proc.new do |tweets, members|
+            proc: proc do |tweets, members|
               valid_ids = members.map(&:id)
-              tweets.select {|tweet| tweet.user && valid_ids.include?(tweet.user.id) }
+              tweets.select { |tweet| tweet.user && valid_ids.include?(tweet.user.id) }
             end
           }
         ]
@@ -222,7 +210,7 @@ module Feedkit
     end
 
     def likes
-      return nil if !@url
+      return nil unless @url
 
       paths = @url.path.split("/")
       user = nil
@@ -236,7 +224,7 @@ module Feedkit
       if user
         @valid = true
         @title = "@#{user} Likes"
-        @client_args = [:favorites, user, { count: 100, tweet_mode: "extended" }]
+        @client_args = [:favorites, user, {count: 100, tweet_mode: "extended"}]
       end
     end
 
@@ -265,9 +253,9 @@ module Feedkit
     end
 
     def shortcut(url)
-      if hashtag = url.sub!(/^#/, '')
+      if hashtag = url.sub!(/^#/, "")
         url = "https://twitter.com/hashtag/#{hashtag}"
-      elsif user = url.sub!(/^@/, '')
+      elsif user = url.sub!(/^@/, "")
         url = "https://twitter.com/#{user}"
       end
       url
@@ -277,10 +265,9 @@ module Feedkit
       if @screen_name
         @screen_name
       elsif @url.query
-        query = CGI::parse(@url.query)
+        query = CGI.parse(@url.query)
         query["screen_name"].first
       end
     end
-
   end
 end

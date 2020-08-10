@@ -1,159 +1,118 @@
+# frozen_string_literal: true
+
+require "digest"
+require "http"
+require_relative "errors"
+
 module Feedkit
   class Request
 
-    USER_AGENT_DOMAINS = [%r((.+)\.tumblr.com)]
+    MAX_SIZE = 10 * 1024 * 1024
 
-    attr_reader :url
-
-    def initialize(url:, clean: false, options: {})
-      @url = url
-      @options = options
-      if clean
-        @url = clean_url
-      end
+    def self.download(url, **args)
+      new(url, **args).download
     end
 
-    def body
-      @body ||= begin
-        result = response.body_str
-        if gzipped?
-          result = gunzip(result)
-        end
-        result = result.lstrip
-        if result == ""
-          result = nil
-        end
-        result
-      end
+    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin")
+      @parsed_url    = BasicAuth.parse(url)
+      @on_redirect   = on_redirect
+      @user_agent    = user_agent
+      @last_modified = last_modified
+      @etag          = etag
+      @username      = @parsed_url.username
+      @password      = @parsed_url.password
     end
 
-    def format
-      if json_feed?
-        :json_feed
-      else
-        if Feedjira.parser_for_xml(body)
-          :xml
-        else
-          :html
+    def download
+      response = request
+
+      if response.content_length && response.content_length > MAX_SIZE
+        raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
+      end
+
+      tempfile = Tempfile.new("request", binmode: true)
+      response.body.each do |chunk|
+        tempfile.write(chunk)
+        chunk.clear # deallocate string
+        if tempfile.size > MAX_SIZE
+          raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
         end
       end
-    rescue ArgumentError
-      if charset
-        @body = body.force_encoding(charset)
-      else
-        @body = body.force_encoding("ASCII-8BIT")
-      end
-      format
+      tempfile.open # flush written content
+      tempfile.rewind
+
+      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url)
+    rescue
+      tempfile&.close
+      raise
+    ensure
+      response&.connection&.close
     end
 
-    def json_feed?
-      @json_feed ||= headers[:content_type] && headers[:content_type].start_with?("application/json") && body.include?("jsonfeed.org")
-    end
-
-    def last_effective_url
-      @last_effective_url ||= response.last_effective_url
-    end
-
-    def last_modified
-      @last_modified ||= begin
-        Time.parse(headers[:last_modified])
-      rescue
-        nil
-      end
-    end
-
-    def etag
-      headers[:etag]
-    end
-
-    def status
-      @status ||= response.response_code
-    end
-
-    def charset
-      @charset ||= begin
-        if headers[:content_type]
-          charset = nil
-          headers[:content_type].split(";").each do |item|
-            item = item.strip
-            if item.start_with?("charset=")
-              charset = item.gsub("charset=", "")
-              charset = charset.strip.upcase
-            end
-          end
-          charset
-        else
-          nil
-        end
-      end
+    def client
+      HTTP
+       .headers(headers)
+       .follow(max_hops: 4, on_redirect: @on_redirect)
+       .timeout(connect: 5, write: 5, read: 5)
+       .encoding(Encoding::BINARY)
+       .use(:auto_inflate)
     end
 
     def headers
-      @headers ||= begin
-        http_headers = response.header_str.split(/[\r\n]+/).map(&:strip)
-        http_headers = http_headers.flat_map do |string|
-          string.scan(/^(\S+):\s*(.+)/)
-        end
-        http_headers.each_with_object({}) do |(header, value), hash|
-          header = header.downcase.gsub("-", "_").to_sym
-          hash[header] = value
-        end
+      Hash.new.tap do |hash|
+        hash[:accept_encoding]   = "gzip, deflate"
+        hash[:user_agent]        = @user_agent
+
+        hash[:if_none_match]     = @etag          unless @etag.nil?
+        hash[:if_modified_since] = @last_modified unless @last_modified.nil?
+        hash[:authorization]     = basic_auth     unless basic_auth.nil?
       end
     end
 
-    private
-
-    def gunzip(data)
-      string = StringIO.new(data)
-      gz =  Zlib::GzipReader.new(string)
-      result = gz.read
-      gz.close
-      result
-    rescue Zlib::GzipFile::Error
-      data
-    end
-
-    def gzipped?
-      headers[:content_encoding] =~ /gzip/i
-    end
-
-    def response
-      @response ||= Curl::Easy.perform(@url) do |curl|
-        if @options.has_key?(:if_modified_since)
-          curl.headers["If-Modified-Since"] = @options[:if_modified_since].httpdate
-        end
-        if @options.has_key?(:if_none_match)
-          curl.headers["If-None-Match"] = @options[:if_none_match]
-        end
-        curl.headers["User-Agent"] = user_agent_spoof || @options[:user_agent] || "Feedbin"
-        curl.headers["Accept-Encoding"] = "gzip"
-        curl.connect_timeout = 10
-        curl.follow_location = true
-        curl.max_redirects = 5
-        curl.ssl_verify_peer = false
-        curl.timeout = 20
+    def basic_auth
+      if @username && @password
+        @basic_auth ||= "Basic " + Base64.strict_encode64("#{@username}:#{@password}")
       end
     end
 
-    def clean_url
-      url = @url
-      url = url.strip
-      url = url.gsub(/^ht*p(s?):?\/*/, 'http\1://')
-      url = url.gsub(/^feed:\/\//, 'http://')
-      if url !~ /^https?:\/\//
-        url = "http://#{url}"
-      end
-      url
+    def request
+      response = client.get(@parsed_url.url)
+      response_error!(response) unless response.status.success?
+      response
+    rescue => exception
+      request_error!(exception)
     end
 
-    def user_agent_spoof
-      host = URI::parse(@url).host
-      if USER_AGENT_DOMAINS.find { |host_pattern| host =~ host_pattern }
-        "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+    def response_error!(response)
+      args = [response.status.to_s, response]
+
+      case response.code
+      when 304 then raise NotModified.new(*args)
+      when 401 then raise Unauthorized.new(*args)
+      when 404 then raise NotFound.new(*args)
+      when 400..499 then raise ClientError.new(*args)
+      when 500..599 then raise ServerError.new(*args)
+      else raise ResponseError.new(*args)
       end
-    rescue URI::InvalidURIError
-      nil
     end
 
+    def request_error!(exception)
+      case exception
+      when HTTP::Request::UnsupportedSchemeError, Addressable::URI::InvalidURIError
+        raise InvalidUrl, exception.message
+      when HTTP::ConnectionError
+        raise ConnectionError, exception.message
+      when HTTP::TimeoutError
+        raise TimeoutError, exception.message
+      when HTTP::Redirector::TooManyRedirectsError
+        raise TooManyRedirects, exception.message
+      when OpenSSL::SSL::SSLError
+        raise SSLError, exception.message
+      when Zlib::BufError
+        raise ZlibError, exception.message
+      else
+        raise exception
+      end
+    end
   end
 end

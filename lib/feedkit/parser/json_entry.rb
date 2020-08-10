@@ -1,8 +1,8 @@
+# frozen_string_literal: true
+
 module Feedkit
   module Parser
-
     class JSONEntry < Entry
-
       def initialize(entry, feed_url, feed_author)
         super(entry, feed_url)
         @feed_author = feed_author
@@ -15,10 +15,10 @@ module Feedkit
       def author
         @author ||= begin
           value = nil
-          if @entry["author"] && @entry["author"]["name"]
-            value = @entry["author"]["name"]
+          value = if @entry["author"] && @entry["author"]["name"]
+            @entry["author"]["name"]
           else
-            value = @feed_author
+            @feed_author
           end
           value
         end
@@ -38,26 +38,24 @@ module Feedkit
 
       def data
         value = {}
-        keys = %w{image banner_image author tag}
+        keys = %w[image banner_image author tag]
         if @entry["attachments"].respond_to?(:first) && @entry["attachments"].first.respond_to?(:[])
-          value[:enclosure_type]   = @entry["attachments"].first["mime_type"] if @entry["attachments"].first["mime_type"]
-          value[:enclosure_url]    = @entry["attachments"].first["url"] if @entry["attachments"].first["url"]
+          value[:enclosure_type] = @entry["attachments"].first["mime_type"] if @entry["attachments"].first["mime_type"]
+          value[:enclosure_url] = @entry["attachments"].first["url"] if @entry["attachments"].first["url"]
           value[:enclosure_length] = @entry["attachments"].first["size_in_bytes"] if @entry["attachments"].first["size_in_bytes"]
-          value[:itunes_duration]  = @entry["attachments"].first["duration_in_seconds"] if @entry["attachments"].first["duration_in_seconds"]
-          value[:title]            = @entry["attachments"].first["title"] if  @entry["attachments"].first["title"]
+          value[:itunes_duration] = @entry["attachments"].first["duration_in_seconds"] if @entry["attachments"].first["duration_in_seconds"]
+          value[:title] = @entry["attachments"].first["title"] if @entry["attachments"].first["title"]
         end
-        value[:public_id_alt]    = public_id_alt if public_id_alt
+        value[:public_id_alt] = public_id_alt if public_id_alt
         value[:json_feed] = @entry.slice(*keys)
         value[:json_feed][:id] = @entry["id"]
         value
       end
 
       def published
-        begin
-          Time.parse(@entry["date_published"])
-        rescue
-          nil
-        end
+        Time.parse(@entry["date_published"])
+      rescue
+        nil
       end
 
       def title
@@ -75,7 +73,6 @@ module Feedkit
           value
         end
       end
-
     end
   end
 end

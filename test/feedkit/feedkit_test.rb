@@ -9,16 +9,15 @@ class FeedkitTest < Minitest::Test
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
 
-    result = Feedkit::Feedkit.new().fetch_and_parse(url)
-    result.to_feed
+    result = ::Feedkit::Request.download(url)
+    result.parse
   end
 
   def test_json_feed
     url = "http://www.example.com/feed.json"
     stub_request_file("feed.json", url)
 
-    result = Feedkit::Feedkit.new().fetch_and_parse(url)
-    result.to_feed
+    result = ::Feedkit::Request.download(url)
+    result.parse
   end
-
 end

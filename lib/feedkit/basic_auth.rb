@@ -30,8 +30,8 @@ module Feedkit
 
       uri_parts = uri.split("/", -1)
       host = uri_parts[2]
-      if host && host.include?(":") && host.include?("@")
-        host_parts = host.split("@", -1)
+      if host && host.include?("@") && (host.include?(":") || host.include?("%3A") )
+        host_parts = host.gsub("%3A", ":").split("@", -1)
         credentials = host_parts.shift
         host = host_parts.join("@")
         credentials = credentials.split(":", -1)

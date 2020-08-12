@@ -13,8 +13,8 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin")
-      @parsed_url    = BasicAuth.parse(url)
+    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, username: nil, password: nil, user_agent: "Feedbin")
+      @parsed_url    = BasicAuth.parse(url, username, password)
       @on_redirect   = on_redirect
       @user_agent    = user_agent
       @last_modified = last_modified

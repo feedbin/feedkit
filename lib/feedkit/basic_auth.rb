@@ -3,12 +3,14 @@ module Feedkit
 
     attr_reader :url
 
-    def initialize(data)
+    def initialize(data, username, password)
       @data = data
+      @username = decode(username) if username
+      @password = decode(password) if password
     end
 
-    def self.parse(data)
-      new(data).parse
+    def self.parse(*args)
+      new(*args).parse
     end
 
     def parse

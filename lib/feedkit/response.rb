@@ -52,7 +52,9 @@ module Feedkit
     end
 
     def credentials
-      "#{@parsed_url.username}:#{@parsed_url.password}@"
+      username = URI.encode_www_form_component(@parsed_url.username)
+      password = URI.encode_www_form_component(@parsed_url.password)
+      "#{username}:#{password}@"
     end
 
     def status

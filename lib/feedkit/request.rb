@@ -77,7 +77,7 @@ module Feedkit
 
     def request
       response = client.get(@parsed_url.url)
-      response_error!(response) unless response.status.success?
+      response_error!(response) unless response.status.success? || response.code == 304
       response
     rescue => exception
       request_error!(exception)
@@ -87,7 +87,6 @@ module Feedkit
       args = [response.status.to_s, response]
 
       case response.code
-      when 304 then raise NotModified.new(*args)
       when 401 then raise Unauthorized.new(*args)
       when 404 then raise NotFound.new(*args)
       when 400..499 then raise ClientError.new(*args)

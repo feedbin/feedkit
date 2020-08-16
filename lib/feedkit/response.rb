@@ -21,6 +21,10 @@ module Feedkit
       @parse ||= Parser.parse!(body, url: url, validate: validate)
     end
 
+    def not_modified?(old_checksum = nil)
+      status == 304 || old_checksum == checksum
+    end
+
     def persist!
       unless @path == persisted_path
         FileUtils.mv @path, persisted_path, force: true

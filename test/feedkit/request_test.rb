@@ -202,16 +202,6 @@ class Feedkit::RequestTest < Minitest::Test
     assert response.not_modified?("da39a3e"), "reponse should be not_modified?"
   end
 
-  def test_should_raise_too_many_requests
-    url = "http://www.example.com"
-
-    stub_request(:get, url).to_return(status: 429)
-
-    assert_raises Feedkit::TooManyRequests do
-      ::Feedkit::Request.download(url)
-    end
-  end
-
   def test_basic_auth
     request = {
       headers: {"Authorization" => "Basic dXNlcm5hbWU6cGFzc3dvcmQ="}

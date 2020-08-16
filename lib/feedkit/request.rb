@@ -77,10 +77,14 @@ module Feedkit
 
     def request
       response = client.get(@parsed_url.url)
-      response_error!(response) unless response.status.success? || response.code == 304
+      response_error!(response) unless success?(response)
       response
     rescue => exception
       request_error!(exception)
+    end
+
+    def success?(response)
+      response.status.success? || response.code == 304
     end
 
     def response_error!(response)

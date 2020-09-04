@@ -175,8 +175,9 @@ class Feedkit::RequestTest < Minitest::Test
     }
     stub_request(:get, url).with(request).to_return(status: status)
 
-    response = ::Feedkit::Request.download(url, etag: etag)
-    assert response.not_modified?, "reponse should be not_modified?"
+    assert_raises Feedkit::NotModified do
+      ::Feedkit::Request.download(url, etag: etag)
+    end
   end
 
   def test_should_not_be_modified_last_modified
@@ -189,17 +190,9 @@ class Feedkit::RequestTest < Minitest::Test
     }
     stub_request(:get, url).with(request).to_return(status: status)
 
-    response = ::Feedkit::Request.download(url, last_modified: last_modified)
-    assert response.not_modified?, "reponse should be not_modified?"
-
-  end
-
-  def test_should_not_be_modified_checksum
-    url = "http://www.example.com"
-    stub_request(:get, url)
-
-    response = ::Feedkit::Request.download(url)
-    assert response.not_modified?("da39a3e"), "reponse should be not_modified?"
+    assert_raises Feedkit::NotModified do
+      ::Feedkit::Request.download(url, last_modified: last_modified)
+    end
   end
 
   def test_basic_auth

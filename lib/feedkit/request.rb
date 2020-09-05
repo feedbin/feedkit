@@ -53,7 +53,7 @@ module Feedkit
       HTTP
        .headers(headers)
        .follow(max_hops: 4, on_redirect: @on_redirect)
-       .timeout(connect: 5, write: 5, read: 5)
+       .timeout(connect: 5, write: 5, read: 15)
        .encoding(Encoding::BINARY)
        .use(:auto_inflate)
     end

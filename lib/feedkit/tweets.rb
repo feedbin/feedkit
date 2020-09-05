@@ -36,7 +36,8 @@ module Feedkit
           consumer_key: ENV["TWITTER_KEY"],
           consumer_secret: ENV["TWITTER_SECRET"],
           access_token: @token,
-          access_token_secret: @secret
+          access_token_secret: @secret,
+          timeouts: {connect: 5, write: 5, read: 15}
         )
       end
     end

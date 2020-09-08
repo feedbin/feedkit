@@ -34,11 +34,11 @@ module Feedkit
     end
 
     def last_modified
-      @response.headers[:last_modified]
+      @response.headers.get(:last_modified).last
     end
 
     def etag
-      @response.headers[:etag]
+      @response.headers.get(:etag).last
     end
 
     def url

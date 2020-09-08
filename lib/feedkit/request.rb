@@ -42,9 +42,9 @@ module Feedkit
       tempfile.rewind
 
       Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url)
-    rescue
+    rescue => exception
       tempfile&.close
-      raise
+      request_error!(exception)
     ensure
       response&.connection&.close
     end
@@ -104,11 +104,13 @@ module Feedkit
         raise ConnectionError, exception.message
       when HTTP::TimeoutError
         raise TimeoutError, exception.message
+      when HTTP::StateError
+        raise StateError, exception.message
       when HTTP::Redirector::TooManyRedirectsError
         raise TooManyRedirects, exception.message
       when OpenSSL::SSL::SSLError
         raise SSLError, exception.message
-      when Zlib::BufError
+      when Zlib::BufError, Zlib::DataError
         raise ZlibError, exception.message
       else
         raise exception

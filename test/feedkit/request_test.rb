@@ -139,8 +139,8 @@ class Feedkit::RequestTest < Minitest::Test
     stub_request(:get, first_url).to_return(response)
     stub_request(:get, last_url)
 
-    on_redirect = proc do |_, location|
-      @location = location
+    on_redirect = proc do |_, to|
+      @location = to.uri.to_s
     end
 
     response = ::Feedkit::Request.download(first_url, on_redirect: on_redirect)

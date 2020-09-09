@@ -33,6 +33,10 @@ module Feedkit
       Digest::SHA1.hexdigest(body)[0..6]
     end
 
+    def not_modified?(old_checksum = nil)
+      status == 304 || old_checksum == checksum
+    end
+
     def last_modified
       @response.headers.get(:last_modified).last
     end

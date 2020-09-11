@@ -13,7 +13,7 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin")
+    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin", auto_inflate: true)
       @parsed_url    = BasicAuth.parse(url)
       @on_redirect   = on_redirect
       @user_agent    = user_agent
@@ -21,6 +21,7 @@ module Feedkit
       @etag          = etag
       @username      = @parsed_url.username
       @password      = @parsed_url.password
+      @auto_inflate  = auto_inflate
     end
 
     def download
@@ -50,22 +51,24 @@ module Feedkit
     end
 
     def client
-      HTTP
+      http = HTTP
        .headers(headers)
        .follow(max_hops: 4, on_redirect: @on_redirect)
        .timeout(connect: 5, write: 5, read: 15)
        .encoding(Encoding::BINARY)
-       .use(:auto_inflate)
+
+      http = http.use(:auto_inflate) if @auto_inflate
+
+      http
     end
 
     def headers
       Hash.new.tap do |hash|
-        hash[:accept_encoding]   = "gzip, deflate"
         hash[:user_agent]        = @user_agent
-
-        hash[:if_none_match]     = @etag          unless @etag.nil?
-        hash[:if_modified_since] = @last_modified unless @last_modified.nil?
-        hash[:authorization]     = basic_auth     unless basic_auth.nil?
+        hash[:accept_encoding]   = "gzip, deflate" if @auto_inflate
+        hash[:if_none_match]     = @etag           unless @etag.nil?
+        hash[:if_modified_since] = @last_modified  unless @last_modified.nil?
+        hash[:authorization]     = basic_auth      unless basic_auth.nil?
       end
     end
 

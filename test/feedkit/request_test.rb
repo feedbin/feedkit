@@ -218,4 +218,18 @@ class Feedkit::RequestTest < Minitest::Test
 
     assert_equal "2ff0eb5", response.checksum
   end
+
+  def test_should_allow_setting_auto_inflate
+    with_auto_inflate = "http://www.example1.com"
+    stub_request(:any, with_auto_inflate)
+    ::Feedkit::Request.download(with_auto_inflate)
+
+    assert_requested :get, with_auto_inflate, headers: {"Accept-Encoding" => "gzip, deflate"}
+
+    without_auto_inflate = "http://www.example2.com"
+    stub_request(:any, without_auto_inflate)
+    ::Feedkit::Request.download(without_auto_inflate, auto_inflate: false)
+
+    assert_requested(:get, without_auto_inflate) { |request| request.headers["Accept-Encoding"] == nil }
+  end
 end

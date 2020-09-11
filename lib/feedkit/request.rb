@@ -26,11 +26,20 @@ module Feedkit
 
     def download
       response = request
-
       if response.content_length && response.content_length > MAX_SIZE
         raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
+      elsif response.status.code == 304
+        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url)
+      else
+        download_to_file(response)
       end
+    rescue => exception
+      request_error!(exception)
+    ensure
+      response&.connection&.close
+    end
 
+    def download_to_file(response)
       tempfile = Tempfile.new("request", binmode: true)
       response.body.each do |chunk|
         tempfile.write(chunk)
@@ -43,11 +52,9 @@ module Feedkit
       tempfile.rewind
 
       Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url)
-    rescue => exception
+    rescue
       tempfile&.close
-      request_error!(exception)
-    ensure
-      response&.connection&.close
+      raise
     end
 
     def client

@@ -8,7 +8,7 @@ module Feedkit
       end
 
       def valid?
-        entries.length > 0
+        !!(feed.url || feed.self_url || feed.title)
       rescue
         false
       end

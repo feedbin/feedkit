@@ -13,6 +13,9 @@ module Feedkit
   # raised when the number of redirects was larger than the specified maximum
   class TooManyRedirects < Error; end
 
+  # raised when the HTTP state is corrupted
+  class StateError < Error; end
+
   # raised when response returned 4xx or 5xx response
   class ResponseError < Error
     attr_reader :response

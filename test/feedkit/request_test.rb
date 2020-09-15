@@ -139,8 +139,8 @@ class Feedkit::RequestTest < Minitest::Test
     stub_request(:get, first_url).to_return(response)
     stub_request(:get, last_url)
 
-    on_redirect = proc do |_, location|
-      @location = location
+    on_redirect = proc do |_, to|
+      @location = to.uri.to_s
     end
 
     response = ::Feedkit::Request.download(first_url, on_redirect: on_redirect)
@@ -175,9 +175,8 @@ class Feedkit::RequestTest < Minitest::Test
     }
     stub_request(:get, url).with(request).to_return(status: status)
 
-    assert_raises Feedkit::NotModified do
-      ::Feedkit::Request.download(url, etag: etag)
-    end
+    response = ::Feedkit::Request.download(url, etag: etag)
+    assert response.not_modified?, "reponse should be not_modified?"
   end
 
   def test_should_not_be_modified_last_modified
@@ -190,9 +189,16 @@ class Feedkit::RequestTest < Minitest::Test
     }
     stub_request(:get, url).with(request).to_return(status: status)
 
-    assert_raises Feedkit::NotModified do
-      ::Feedkit::Request.download(url, last_modified: last_modified)
-    end
+    response = ::Feedkit::Request.download(url, last_modified: last_modified)
+    assert response.not_modified?, "reponse should be not_modified?"
+  end
+
+  def test_should_not_be_modified_checksum
+    url = "http://www.example.com"
+    stub_request(:get, url)
+
+    response = ::Feedkit::Request.download(url)
+    assert response.not_modified?("da39a3e"), "reponse should be not_modified?"
   end
 
   def test_basic_auth
@@ -211,5 +217,19 @@ class Feedkit::RequestTest < Minitest::Test
     response = ::Feedkit::Request.download(url)
 
     assert_equal "2ff0eb5", response.checksum
+  end
+
+  def test_should_allow_setting_auto_inflate
+    with_auto_inflate = "http://www.example1.com"
+    stub_request(:any, with_auto_inflate)
+    ::Feedkit::Request.download(with_auto_inflate)
+
+    assert_requested :get, with_auto_inflate, headers: {"Accept-Encoding" => "gzip, deflate"}
+
+    without_auto_inflate = "http://www.example2.com"
+    stub_request(:any, without_auto_inflate)
+    ::Feedkit::Request.download(without_auto_inflate, auto_inflate: false)
+
+    assert_requested(:get, without_auto_inflate) { |request| request.headers["Accept-Encoding"] == nil }
   end
 end

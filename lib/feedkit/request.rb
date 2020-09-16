@@ -13,15 +13,15 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, etag: nil, last_modified: nil, user_agent: "Feedbin", auto_inflate: true)
-      @parsed_url    = BasicAuth.parse(url)
+    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil)
+      @parsed_url    = BasicAuth.parse(url, username: username, password: password)
+      @username      = @parsed_url.username
+      @password      = @parsed_url.password
       @on_redirect   = on_redirect
+      @auto_inflate  = auto_inflate
       @user_agent    = user_agent
       @last_modified = last_modified
       @etag          = etag
-      @username      = @parsed_url.username
-      @password      = @parsed_url.password
-      @auto_inflate  = auto_inflate
     end
 
     def download
@@ -71,7 +71,7 @@ module Feedkit
 
     def headers
       Hash.new.tap do |hash|
-        hash[:user_agent]        = @user_agent
+        hash[:user_agent]        = @user_agent || "Feedbin"
         hash[:accept_encoding]   = "gzip, deflate" if @auto_inflate
         hash[:if_none_match]     = @etag           unless @etag.nil?
         hash[:if_modified_since] = @last_modified  unless @last_modified.nil?

@@ -30,4 +30,14 @@ class Feedkit::BasicAuthTest < Minitest::Test
     result = Feedkit::BasicAuth.parse(url)
     assert_equal(url, result.url)
   end
+
+  def test_should_prefer_password_args
+    username = "username"
+    password = "password"
+    url = "http://wrong_username:wrong_password@www.example.com/feed/"
+
+    result = Feedkit::BasicAuth.parse(url, username: username, password: password)
+    assert_equal(username, result.username)
+    assert_equal(password, result.password)
+  end
 end

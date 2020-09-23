@@ -2,7 +2,7 @@
 
 module Feedkit
   module Parser
-    def parse!(body, url:, encoding: Encoding::UTF_8, validate: true)
+    def parse!(body, url:, encoding: nil, validate: true)
 
       result = nil
 
@@ -10,9 +10,13 @@ module Feedkit
       result = feed if feed.valid?
 
       if !result
-        xml = Nokogiri::XML.parse(body.dup.force_encoding(encoding)).to_xml(encoding: "utf-8")
-        feed = Parser::XMLFeed.new(xml, url)
-        result = feed if feed.valid?
+        detected = DetectEncoding.detect(body)
+        encoding = detected.encoding if detected.confident?
+        if encoding
+          xml = Nokogiri::XML.parse(body, nil, encoding.to_s).to_xml(encoding: "utf-8")
+          feed = Parser::XMLFeed.new(xml, url)
+          result = feed if feed.valid?
+        end
       end
 
       if !result

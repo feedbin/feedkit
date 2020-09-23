@@ -66,9 +66,9 @@ module Feedkit
     end
 
     def encoding
-      Encoding.find @response.content_type.charset
-    rescue ArgumentError, TypeError
-      Encoding::UTF_8
+      Encoding.find(@response.content_type.charset)
+    rescue
+      nil
     end
 
     private

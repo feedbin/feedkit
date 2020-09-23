@@ -65,6 +65,12 @@ module Feedkit
       @response.status
     end
 
+    def encoding
+      Encoding.find @response.content_type.charset
+    rescue
+      nil
+    end
+
     private
 
     def persisted_path

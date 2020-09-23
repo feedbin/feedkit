@@ -6,11 +6,13 @@ require "twitter-text"
 require "http"
 require "socket"
 require "cgi"
+require "rchardet"
 
 require "feedkit/core_ext/try"
 require "feedkit/feedjira_extension"
 
 require "feedkit/version"
+require "feedkit/detect_encoding"
 require "feedkit/errors"
 require "feedkit/basic_auth"
 require "feedkit/response"

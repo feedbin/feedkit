@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "twitter", "~> 7.0"
   spec.add_runtime_dependency "twitter-text", "~> 3.1.0"
   spec.add_runtime_dependency "http", "~> 4.4"
+  spec.add_runtime_dependency "rchardet", "~> 1.8.0"
 
   spec.add_development_dependency "bundler", "~> 2.1"
   spec.add_development_dependency "rake", "~> 13"

@@ -18,7 +18,7 @@ module Feedkit
     end
 
     def parse(validate: true)
-      @parse ||= Parser.parse!(body, url: url, validate: validate)
+      @parse ||= Parser.parse!(body, url: url, validate: validate, encoding: encoding)
     end
 
     def persist!
@@ -66,7 +66,7 @@ module Feedkit
     end
 
     def encoding
-      Encoding.find @response.content_type.charset
+      Encoding.find(@response.content_type.charset)
     rescue
       nil
     end

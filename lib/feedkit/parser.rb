@@ -2,12 +2,22 @@
 
 module Feedkit
   module Parser
-    def parse!(body, url:, validate: true)
+    def parse!(body, url:, encoding: nil, validate: true)
 
       result = nil
 
       feed = Parser::XMLFeed.new(body, url)
       result = feed if feed.valid?
+
+      if !result
+        detected = DetectEncoding.detect(body)
+        encoding = detected.encoding if detected.confident?
+        if encoding
+          xml = Nokogiri::XML.parse(body, nil, encoding.to_s).to_xml(encoding: "utf-8")
+          feed = Parser::XMLFeed.new(xml, url)
+          result = feed if feed.valid?
+        end
+      end
 
       if !result
         feed = Parser::JSONFeed.new(body, url)

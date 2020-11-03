@@ -8,9 +8,13 @@ module Feedkit
       end
 
       def valid?
-        !!(feed.url || feed.self_url || feed.title)
+        !!(feed.url || feed.self_url || feed.title || has_entries?)
       rescue
         false
+      end
+
+      def has_entries?
+        feed.entries.respond_to?(:length) && feed.entries.length > 0
       end
 
       def title

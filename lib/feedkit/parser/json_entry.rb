@@ -3,9 +3,10 @@
 module Feedkit
   module Parser
     class JSONEntry < Entry
-      def initialize(entry, feed_url, feed_author)
+      def initialize(entry, feed_url, feed_author, feed_authors)
         super(entry, feed_url)
         @feed_author = feed_author
+        @feed_authors = feed_authors
       end
 
       def entry_id
@@ -24,6 +25,10 @@ module Feedkit
         end
       end
 
+      def authors
+        @entry["authors"] || @feed_authors || []
+      end
+
       def content
         @content ||= begin
           value = nil
@@ -38,7 +43,7 @@ module Feedkit
 
       def data
         value = {}
-        keys = %w[image banner_image author tag]
+        keys = %w[image banner_image author tag external_url]
         if @entry["attachments"].respond_to?(:first) && @entry["attachments"].first.respond_to?(:[])
           value[:enclosure_type] = @entry["attachments"].first["mime_type"] if @entry["attachments"].first["mime_type"]
           value[:enclosure_url] = @entry["attachments"].first["url"] if @entry["attachments"].first["url"]
@@ -49,6 +54,7 @@ module Feedkit
         value[:public_id_alt] = public_id_alt if public_id_alt
         value[:json_feed] = @entry.slice(*keys)
         value[:json_feed][:id] = @entry["id"]
+        value[:json_feed][:authors] = authors
         value
       end
 

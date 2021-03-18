@@ -39,12 +39,16 @@ module Feedkit
         end
       end
 
+      def authors
+        feed["authors"]
+      end
+
       def entries
         @entries ||= begin
           entries = []
           if !feed["items"].nil? && feed["items"].length > 0
             entries = feed["items"].map { |entry|
-              JSONEntry.new(entry, base_url, author)
+              JSONEntry.new(entry, base_url, author, authors)
             }
             entries = entries.uniq { |entry| entry.public_id }
           end

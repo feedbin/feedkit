@@ -1,4 +1,4 @@
-name: Ruby CI
+name: CI
 
 on: [push, pull_request]
 
@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, macos-10.15]
+        os: [ubuntu-18.04, ubuntu-20.04]
         ruby: [2.6, 2.7]
 
     runs-on: ${{ matrix.os }}
@@ -22,7 +22,6 @@ jobs:
 
     - name: Install system dependencies
       run: sudo apt-get --yes install libidn11-dev
-      if: matrix.os == 'ubuntu-18.04'
 
     - uses: actions/cache@v1
       with:

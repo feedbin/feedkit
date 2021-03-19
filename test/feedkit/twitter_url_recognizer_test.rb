@@ -156,7 +156,7 @@ class Feedkit::TwitterURLRecognizerTest < Minitest::Test
     assert_equal("https://twitter.com/i/likes?screen_name=other", twitter_feed.url.to_s)
   end
 
-  def test_should_recognize_with_replies
+  def test_should_recognize_tweet
     url = "https://twitter.com/bsaid/status/1237462443183484928"
     twitter_feed = ::Feedkit::TwitterURLRecognizer.new(url, nil)
     assert twitter_feed.valid?

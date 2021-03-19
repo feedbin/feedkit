@@ -2,7 +2,7 @@
 
 module Feedkit
   class TwitterURLRecognizer
-    attr_reader :screen_name, :type, :client_args
+    attr_reader :type, :client_args
     attr_accessor :title
 
     def initialize(url, screen_name)
@@ -27,15 +27,20 @@ module Feedkit
     end
 
     def screen_name
-      get_screen_name
+      @screen_name ||= begin
+        if @url.query
+          query = CGI.parse(@url.query)
+          query["screen_name"].first
+        end
+      end
     end
 
     def feed_options
-      @feed_options || {}
+      @feed_options ||= {}
     end
 
     def filters
-      @filters || []
+      @filters ||= []
     end
 
     def valid?
@@ -216,7 +221,7 @@ module Feedkit
       user = nil
 
       if host_valid? && paths.length == 3 && paths.join("/") == "/i/likes"
-        user = get_screen_name
+        user = screen_name
       elsif host_valid? && paths.length == 3 && paths.last == "likes"
         user = paths[1]
       end
@@ -259,15 +264,6 @@ module Feedkit
         url = "https://twitter.com/#{user}"
       end
       url
-    end
-
-    def get_screen_name
-      if @screen_name
-        @screen_name
-      elsif @url.query
-        query = CGI.parse(@url.query)
-        query["screen_name"].first
-      end
     end
   end
 end

@@ -3,7 +3,7 @@
 module Feedkit
   module Parser
     class TwitterFeed
-      attr_reader :feed, :entries, :options
+      attr_reader :feed, :options
 
       FEED_ATTRIBUTES = %i[etag feed_url last_modified self_url site_url title feed_type options].freeze
 
@@ -41,7 +41,7 @@ module Feedkit
       def feed_type
         @recognized_url.type
       end
-      
+
       def hubs
         nil
       end

@@ -78,7 +78,7 @@ class Feedkit::Parser::XMLEntryTest < Minitest::Test
     assert_equal("8e42940d1c7fe791a560072404171adee3ff4324", parsed_entry.public_id)
   end
 
-  def test_public_id_alt_with_entry_id_http
+  def test_public_id_alt_with_port
     feed_url = "http://example.com/feed.xml"
     entry = OpenStruct.new(entry_id: "http://foo.com:443/posts?id=30&limit=5#time=1305298413")
     parsed_entry = ::Feedkit::Parser::XMLEntry.new(entry, feed_url)

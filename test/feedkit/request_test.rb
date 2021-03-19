@@ -14,7 +14,7 @@ class Feedkit::RequestTest < Minitest::Test
   def test_persistence
     url = "http://www.example.com/"
     file = "index.html"
-    request = stub_request_file(file, url)
+    stub_request_file(file, url)
     response = ::Feedkit::Request.download(url)
 
     path_before = response.path
@@ -31,7 +31,7 @@ class Feedkit::RequestTest < Minitest::Test
   def test_get_body
     url = "http://www.example.com/"
     file = "index.html"
-    request = stub_request_file(file, url)
+    stub_request_file(file, url)
     response = ::Feedkit::Request.download(url)
     assert_equal load_body(file), response.body
   end
@@ -44,7 +44,6 @@ class Feedkit::RequestTest < Minitest::Test
 
   def test_should_raise_too_large
     url = "http://www.example.com/"
-    file = "index.html"
 
     # build an 11MB string
     body = "12345678910" * (1024 * 1024)
@@ -58,7 +57,7 @@ class Feedkit::RequestTest < Minitest::Test
   def test_should_raise_not_feed
     url = "http://www.example.com/"
     file = "index.html"
-    request = stub_request_file(file, url)
+    stub_request_file(file, url)
     response = ::Feedkit::Request.download(url)
 
     assert_raises Feedkit::NotFeed do
@@ -128,7 +127,6 @@ class Feedkit::RequestTest < Minitest::Test
   def test_should_follow_redirects
     first_url = "http://www.example.com"
     last_url = "#{first_url}/final"
-    body = random_string
 
     response = {
       status: 301,
@@ -213,7 +211,7 @@ class Feedkit::RequestTest < Minitest::Test
   def test_should_get_checksum
     url = "http://www.example.com/"
     file = "index.html"
-    request = stub_request_file(file, url)
+    stub_request_file(file, url)
     response = ::Feedkit::Request.download(url)
 
     assert_equal "2ff0eb5", response.checksum

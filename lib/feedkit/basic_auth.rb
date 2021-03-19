@@ -7,6 +7,8 @@ module Feedkit
       @data = data
       @username = decode(username) if username
       @password = decode(password) if password
+      @base_username = nil
+      @base_password = nil
     end
 
     def self.parse(*args, **keywords)

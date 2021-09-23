@@ -26,7 +26,7 @@ module Feedkit
     end
 
     def download
-      if curl_hosts.include?(@url.host)
+      if @url.respond_to?(:host) && curl_hosts.include?(@url.host)
         return Curl.download(@parsed_url.url)
       end
 

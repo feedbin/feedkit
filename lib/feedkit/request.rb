@@ -15,6 +15,7 @@ module Feedkit
 
     def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil)
       @parsed_url    = BasicAuth.parse(url, username: username, password: password)
+      @url           = Addressable::URI.heuristic_parse(@parsed_url.url) rescue nil
       @username      = @parsed_url.username
       @password      = @parsed_url.password
       @on_redirect   = on_redirect
@@ -25,6 +26,10 @@ module Feedkit
     end
 
     def download
+      if curl_hosts.include?(@url.host)
+        return Curl.download(@parsed_url.url)
+      end
+
       response = request
       if response.content_length && response.content_length > MAX_SIZE
         raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
@@ -128,6 +133,10 @@ module Feedkit
       else
         raise exception
       end
+    end
+
+    def curl_hosts
+      ENV["FEEDKIT_CURL_HOSTS"]&.split(",") || []
     end
   end
 end

@@ -17,8 +17,8 @@ module Feedkit
       @body ||= File.read(@path, binmode: true)
     end
 
-    def parse(validate: true)
-      @parse ||= Parser.parse!(body, url: url, validate: validate, encoding: encoding)
+    def parse(validate: true, original_url: nil)
+      @parse ||= Parser.parse!(body, url: original_url || url, validate: validate, encoding: encoding)
     end
 
     def persist!

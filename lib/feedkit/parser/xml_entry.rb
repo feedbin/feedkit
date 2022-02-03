@@ -41,16 +41,27 @@ module Feedkit
 
       def data
         value = {}
-        value[:enclosure_type] = @entry.enclosure_type if @entry.try(:enclosure_type)
-        value[:enclosure_url] = @entry.enclosure_url if @entry.try(:enclosure_url)
-        value[:enclosure_length] = @entry.enclosure_length if @entry.try(:enclosure_length)
-        value[:itunes_duration] = @entry.itunes_duration if @entry.try(:itunes_duration)
-        value[:itunes_subtitle] = @entry.itunes_subtitle if @entry.try(:itunes_subtitle)
-        value[:itunes_image] = itunes_image
-        value[:youtube_video_id] = @entry.youtube_video_id if @entry.try(:youtube_video_id)
-        value[:media_width] = @entry.media_width if @entry.try(:media_width)
-        value[:media_height] = @entry.media_height if @entry.try(:media_height)
-        value[:public_id_alt] = public_id_alt if public_id_alt
+        value[:enclosure_type]          = @entry.enclosure_type if @entry.try(:enclosure_type)
+        value[:enclosure_url]           = @entry.enclosure_url if @entry.try(:enclosure_url)
+        value[:enclosure_length]        = @entry.enclosure_length if @entry.try(:enclosure_length)
+        value[:itunes_author]           = @entry.itunes_author if @entry.try(:itunes_author)
+        value[:itunes_block]            = @entry.itunes_block if @entry.try(:itunes_block)
+        value[:itunes_closed_captioned] = @entry.itunes_closed_captioned if @entry.try(:itunes_closed_captioned)
+        value[:itunes_duration]         = @entry.itunes_duration if @entry.try(:itunes_duration)
+        value[:itunes_episode]          = @entry.itunes_episode if @entry.try(:itunes_episode)
+        value[:itunes_episode_type]     = @entry.itunes_episode_type if @entry.try(:itunes_episode_type)
+        value[:itunes_explicit]         = @entry.itunes_explicit if @entry.try(:itunes_explicit)
+        value[:itunes_image]            = itunes_image
+        value[:itunes_keywords]         = @entry.itunes_keywords if @entry.try(:itunes_keywords)
+        value[:itunes_order]            = @entry.itunes_order if @entry.try(:itunes_order)
+        value[:itunes_season]           = @entry.itunes_season if @entry.try(:itunes_season)
+        value[:itunes_subtitle]         = @entry.itunes_subtitle if @entry.try(:itunes_subtitle)
+        value[:itunes_summary]          = @entry.itunes_summary if @entry.try(:itunes_summary)
+        value[:itunes_title]            = @entry.itunes_title if @entry.try(:itunes_title)
+        value[:youtube_video_id]        = @entry.youtube_video_id if @entry.try(:youtube_video_id)
+        value[:media_width]             = @entry.media_width if @entry.try(:media_width)
+        value[:media_height]            = @entry.media_height if @entry.try(:media_height)
+        value[:public_id_alt]           = public_id_alt if public_id_alt
         value
       end
 
@@ -67,10 +78,10 @@ module Feedkit
       end
 
       def itunes_image
-        if !@extra_data[:itunes_image].nil?
-          @extra_data[:itunes_image].strip
-        elsif @entry.try(:itunes_image)
+        if @entry.try(:itunes_image)
           @entry.itunes_image.strip
+        elsif !@extra_data[:itunes_image].nil?
+          @extra_data[:itunes_image].strip
         end
       end
     end

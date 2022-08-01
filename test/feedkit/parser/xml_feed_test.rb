@@ -12,6 +12,9 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
     assert_equal "https://feedbin.com/blog/atom.xml", result.self_url
     assert_equal "https://feedbin.com", result.site_url
     assert_equal 5, result.entries.count
+    assert_equal Time.parse("2016-02-03T15:37:25-06:00"), result.entries.first.published
+    assert_equal "/2016/02/03/subscribe-to-email-newsletters-in-feedbin", result.entries.first.entry_id
+    assert_equal "https://feedbin.com/blog/2016/02/03/subscribe-to-email-newsletters-in-feedbin/", result.entries.first.url
   end
 
   def test_base_url

@@ -31,9 +31,7 @@ module Feedkit
       end
 
       response = request
-      if response.content_length && response.content_length > MAX_SIZE
-        raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
-      elsif response.status.code == 304
+      if response.status.code == 304
         Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url)
       else
         download_to_file(response)
@@ -49,9 +47,7 @@ module Feedkit
       response.body.each do |chunk|
         tempfile.write(chunk)
         chunk.clear # deallocate string
-        if tempfile.size > MAX_SIZE
-          raise TooLarge, "file is too large (max is #{MAX_SIZE / 1024}KB)"
-        end
+        break if tempfile.size > MAX_SIZE
       end
       tempfile.open # flush written content
       tempfile.rewind

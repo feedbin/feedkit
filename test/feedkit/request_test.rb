@@ -42,18 +42,6 @@ class Feedkit::RequestTest < Minitest::Test
     end
   end
 
-  def test_should_raise_too_large
-    url = "http://www.example.com/"
-
-    # build an 11MB string
-    body = "12345678910" * (1024 * 1024)
-    stub_request(:get, url).to_return(body: body)
-
-    assert_raises Feedkit::TooLarge do
-      ::Feedkit::Request.download(url)
-    end
-  end
-
   def test_should_raise_not_feed
     url = "http://www.example.com/"
     file = "index.html"

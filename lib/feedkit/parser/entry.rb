@@ -3,7 +3,7 @@
 module Feedkit
   module Parser
     class Entry
-      ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :source, :title, :url]
+      ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :title, :url]
 
       def initialize(entry, feed_url, extra_data = {})
         @entry = entry
@@ -21,6 +21,10 @@ module Feedkit
 
       def public_id
         @public_id ||= build_id(entry_id)
+      end
+
+      def fingerprint
+        Parser.fingerprint_hash(to_entry)
       end
 
       def public_id_alt
@@ -68,6 +72,7 @@ module Feedkit
         result = [uri.userinfo, uri.path, uri.query, uri.fragment].join
         result == "" ? nil : result
       end
+
     end
   end
 end

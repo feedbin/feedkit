@@ -35,7 +35,28 @@ module Feedkit
 
       result
     end
-
     module_function :parse!
+
+    def fingerprint_hash(hash)
+      values = []
+      deep_flatten(hash) do |value|
+        values.push(value.to_s)
+      end
+      Digest::MD5.hexdigest(values.sort.join)
+    end
+    module_function :fingerprint_hash
+
+    def deep_flatten(object, &block)
+      case object
+      when Hash
+        object.transform_values { |value| deep_flatten(value, &block) }
+      when Array
+        object.map { |e| deep_flatten(e, &block) }
+      else
+        yield(object)
+      end
+    end
+    module_function :deep_flatten
+
   end
 end

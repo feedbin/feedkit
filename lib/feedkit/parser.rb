@@ -42,7 +42,8 @@ module Feedkit
       deep_flatten(hash) do |value|
         values.push(value.to_s)
       end
-      Digest::MD5.hexdigest(values.sort.join)
+      value = values.sort.join.gsub(/\s+/, "")
+      Digest::MD5.hexdigest(value)
     end
     module_function :fingerprint_hash
 

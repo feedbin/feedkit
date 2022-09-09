@@ -23,10 +23,10 @@ class Feedkit::Parser::XMLEntryTest < Minitest::Test
 
   def test_public_id_with_entry_id
     feed_url = "http://example.com"
-    entry = OpenStruct.new(entry_id: "http://example.com/post")
+    entry = OpenStruct.new(entry_id: "http://example.com/post", content: "one two")
     parsed_entry = ::Feedkit::Parser::XMLEntry.new(entry, feed_url)
     assert_equal("27aa8c55201e5701e43a333fe70e2e321be4633c", parsed_entry.public_id)
-    assert_equal("be3a718eb2c29438a7f3fb17442fef62", parsed_entry.fingerprint)
+    assert_equal("6df5d34959dba54ef486861ac2a759a0", parsed_entry.fingerprint)
   end
 
   def test_public_id_without_entry_id

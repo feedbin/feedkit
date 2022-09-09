@@ -41,7 +41,7 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
 
     # public id should be generated from http://www.example.com/redirect
     assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)
-    assert_equal("1d2c77cc009f7c23698c11926cced26f", feed.entries.first.fingerprint)
+    assert_equal("6bdb7118689fba5634b7ff7d15e1cc7f", feed.entries.first.fingerprint)
     assert_equal("31b66ce9e7891c7b138782c677d1a012", feed.fingerprint)
   end
 
@@ -70,6 +70,6 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
 
     # public id should be generated from http://www.example.com/redirect
     assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)
-    assert_equal("b438c80c7b5f82ee5d12049091ef076c", feed.entries.last.fingerprint)
+    assert_equal("eb6a22d9764315bba8df37c086879cb9", feed.entries.last.fingerprint)
   end
 end

@@ -42,6 +42,7 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
     # public id should be generated from http://www.example.com/redirect
     assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)
     assert_equal("1d2c77cc009f7c23698c11926cced26f", feed.entries.first.fingerprint)
+    assert_equal("31b66ce9e7891c7b138782c677d1a012", feed.fingerprint)
   end
 
   def test_base_url_with_password

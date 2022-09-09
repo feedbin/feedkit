@@ -24,6 +24,10 @@ module Feedkit
         end
       end
 
+      def fingerprint
+        Parser.fingerprint_hash(to_feed)
+      end
+
       private
 
       def url_from_host(link)

@@ -28,9 +28,19 @@ module Feedkit
       end
 
       def guid
-        normalized = normalize(uri: entry_id) unless entry_id.nil?
+        normalized = remove_protocol_and_host(uri: entry_id) unless entry_id.nil?
         normalized = build_id(normalized, include_published: false)
         Digest::MD5.hexdigest(normalized)
+      end
+
+      def remove_protocol_and_host(uri:)
+        parsed = URI(uri)
+        result = [parsed.userinfo, parsed.path, parsed.query, parsed.fragment].join
+        result == "" ? uri : result
+      rescue
+        uri.gsub!("http:", "")
+        uri.gsub!("https:", "")
+        uri
       end
 
       def fingerprint
@@ -47,13 +57,6 @@ module Feedkit
           parts.push(title)
         end
         parts.compact.join
-      end
-
-      def normalize(uri:)
-        parsed_uri(uri: uri)
-      rescue
-        uri.gsub!("http:", "")
-        uri.gsub!("https:", "")
       end
 
       def parsed_uri(uri:)

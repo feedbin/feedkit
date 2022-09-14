@@ -13,9 +13,12 @@ module Feedkit
 
       def to_entry
         @to_entry ||= begin
-          ENTRY_ATTRIBUTES.each_with_object({}) do |attribute, hash|
+          hash = ENTRY_ATTRIBUTES.each_with_object({}) do |attribute, hash|
             hash[attribute] = respond_to?(attribute) ? send(attribute) : nil
           end
+          # don't include dynamic attributes in calculation
+          hash[:fingerprint] = Parser.fingerprint_hash(hash)
+          hash
         end
       end
 
@@ -33,18 +36,8 @@ module Feedkit
         Digest::MD5.hexdigest(normalized)
       end
 
-      def remove_protocol_and_host(uri:)
-        parsed = URI(uri)
-        result = [parsed.userinfo, parsed.path, parsed.query, parsed.fragment].join
-        result == "" ? uri : result
-      rescue
-        uri.gsub!("http:", "")
-        uri.gsub!("https:", "")
-        uri
-      end
-
       def fingerprint
-        Parser.fingerprint_hash(to_entry)
+        to_entry[:fingerprint]
       end
 
       def build_id(base_entry_id, include_published: true)
@@ -57,12 +50,6 @@ module Feedkit
           parts.push(title)
         end
         parts.compact.join
-      end
-
-      def parsed_uri(uri:)
-        uri = URI(uri)
-        result = [uri.userinfo, uri.path, uri.query, uri.fragment].join
-        result == "" ? nil : result
       end
 
       def entry_id_alt
@@ -83,6 +70,24 @@ module Feedkit
 
       def source
         Socket.gethostname
+      end
+
+      private
+
+      def parsed_uri(uri:)
+        uri = URI(uri)
+        result = [uri.userinfo, uri.path, uri.query, uri.fragment].join
+        result == "" ? nil : result
+      end
+
+      def remove_protocol_and_host(uri:)
+        parsed = URI(uri)
+        result = [parsed.userinfo, parsed.path, parsed.query, parsed.fragment].join
+        result == "" ? uri : result
+      rescue
+        uri.gsub!("http:", "")
+        uri.gsub!("https:", "")
+        uri
       end
     end
   end

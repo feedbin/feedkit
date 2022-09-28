@@ -50,9 +50,7 @@ class Feedkit::TweetsTest < Minitest::Test
       assert !!feed.feed.entries
 
       to_feed = {
-        etag: nil,
         feed_url: "https://twitter.com/bsaid?screen_name=bsaid",
-        last_modified: nil,
         self_url: "https://twitter.com/bsaid?screen_name=bsaid",
         site_url: "https://twitter.com/bsaid?screen_name=bsaid",
         title: "@bsaid",

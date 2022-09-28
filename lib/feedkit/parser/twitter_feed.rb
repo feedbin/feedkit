@@ -5,7 +5,7 @@ module Feedkit
     class TwitterFeed
       attr_reader :feed, :options
 
-      FEED_ATTRIBUTES = %i[etag feed_url last_modified self_url site_url title feed_type options].freeze
+      FEED_ATTRIBUTES = %i[feed_url self_url site_url title feed_type options].freeze
 
       def initialize(recognized_url, tweets, options)
         @recognized_url = recognized_url

@@ -9,6 +9,11 @@ gem "twitter",     github: "feedbin/twitter",     branch: "feedbin"
 
 group :development do
   gem "dotenv"
+  gem "sinatra"
+  gem "webrick"
+  gem "better_errors"
+  gem "binding_of_caller"
+  gem "rerun"
 end
 
 # Specify your gem's dependencies in feedkit.gemspec

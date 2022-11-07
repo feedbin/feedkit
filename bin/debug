@@ -1,0 +1,4 @@
+#!/bin/bash
+
+open http://localhost:4568
+bundle exec rerun 'PORT=4568 bundle exec ruby test/server.rb'

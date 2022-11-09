@@ -246,7 +246,12 @@ module Feedkit
         url = "https://#{url}"
       end
 
-      url = URI.parse(url)
+      url = begin
+        URI.parse(url)
+      rescue URI::InvalidURIError
+        escaped = url.chars.map { |char| char.ascii_only? ? char : CGI.escape(char) }.join
+        URI.parse(escaped)
+      end
 
       if ["twitter.com", "mobile.twitter.com"].include?(url.host)
         url.host = "twitter.com"

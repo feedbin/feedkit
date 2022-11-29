@@ -36,6 +36,13 @@ module Feedkit
       else
         download_to_file(response)
       end
+    rescue OpenSSL::SSL::SSLError => exception
+      # HTTP sometimes has this error that doesn't show up in other clients
+      if exception.message.include?("unexpected eof while reading")
+        return Curl.download(@parsed_url.url)
+      else
+        raise exception
+      end
     rescue => exception
       request_error!(exception)
     ensure

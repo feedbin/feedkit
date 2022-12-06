@@ -149,6 +149,7 @@ class Feedkit::RequestTest < Minitest::Test
 
     assert_equal last_modified, response.last_modified
     assert_equal etag, response.etag
+    assert_equal etag, response.headers.get(:etag).last
   end
 
   def test_should_not_be_modified_etag

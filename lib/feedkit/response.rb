@@ -45,6 +45,10 @@ module Feedkit
       @response.headers.get(:etag).last
     end
 
+    def headers
+      @response.headers
+    end
+
     def url
       result = @response.uri.to_s
       if @parsed_url.username && @parsed_url.password

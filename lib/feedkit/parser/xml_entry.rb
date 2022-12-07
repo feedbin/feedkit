@@ -40,29 +40,34 @@ module Feedkit
       end
 
       def data
-        value = {}
-        value[:enclosure_type]          = @entry.enclosure_type if @entry.try(:enclosure_type)
-        value[:enclosure_url]           = @entry.enclosure_url if @entry.try(:enclosure_url)
-        value[:enclosure_length]        = @entry.enclosure_length if @entry.try(:enclosure_length)
-        value[:itunes_author]           = @entry.itunes_author if @entry.try(:itunes_author)
-        value[:itunes_block]            = @entry.itunes_block if @entry.try(:itunes_block)
-        value[:itunes_closed_captioned] = @entry.itunes_closed_captioned if @entry.try(:itunes_closed_captioned)
-        value[:itunes_duration]         = @entry.itunes_duration if @entry.try(:itunes_duration)
-        value[:itunes_episode]          = @entry.itunes_episode if @entry.try(:itunes_episode)
-        value[:itunes_episode_type]     = @entry.itunes_episode_type if @entry.try(:itunes_episode_type)
-        value[:itunes_explicit]         = @entry.itunes_explicit if @entry.try(:itunes_explicit)
-        value[:itunes_image]            = itunes_image
-        value[:itunes_keywords]         = @entry.itunes_keywords if @entry.try(:itunes_keywords)
-        value[:itunes_order]            = @entry.itunes_order if @entry.try(:itunes_order)
-        value[:itunes_season]           = @entry.itunes_season if @entry.try(:itunes_season)
-        value[:itunes_subtitle]         = @entry.itunes_subtitle if @entry.try(:itunes_subtitle)
-        value[:itunes_summary]          = @entry.itunes_summary if @entry.try(:itunes_summary)
-        value[:itunes_title]            = @entry.itunes_title if @entry.try(:itunes_title)
-        value[:youtube_video_id]        = @entry.youtube_video_id if @entry.try(:youtube_video_id)
-        value[:media_width]             = @entry.media_width if @entry.try(:media_width)
-        value[:media_height]            = @entry.media_height if @entry.try(:media_height)
-        value[:public_id_alt]           = public_id_alt if public_id_alt
-        value
+        attributes = %i[
+          enclosure_length
+          enclosure_type
+          enclosure_url
+          itunes_author
+          itunes_block
+          itunes_closed_captioned
+          itunes_duration
+          itunes_episode
+          itunes_episode_type
+          itunes_explicit
+          itunes_keywords
+          itunes_order
+          itunes_season
+          itunes_subtitle
+          itunes_summary
+          itunes_title
+          media_height
+          media_width
+          youtube_video_id
+        ]
+
+        hash = extract_attributes(@entry, attributes)
+
+        hash[:media]         = media         if media
+        hash[:itunes_image]  = itunes_image  if itunes_image
+        hash[:public_id_alt] = public_id_alt if public_id_alt
+        hash
       end
 
       def published
@@ -75,6 +80,32 @@ module Feedkit
 
       def url
         @entry.url ? @entry.url.strip : nil
+      end
+
+      def media
+        return unless @entry.try(:media).respond_to?(:each)
+        attributes = %i[
+          star_average
+          star_count
+          thumbnail_height
+          thumbnail_url
+          thumbnail_width
+          title
+          type
+          url
+        ]
+
+        @entry.media.each_with_object([]) do |media, array|
+          array.push(extract_attributes(media, attributes))
+        end
+      end
+
+      def extract_attributes(object, attributes)
+        attributes.each_with_object({}) do |attribute, hash|
+          if value = object.try(attribute)
+            hash[attribute] = value.respond_to?(:strip) ? value.strip : value
+          end
+        end
       end
 
       def itunes_image

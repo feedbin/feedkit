@@ -61,20 +61,31 @@ module Feedkit
 
       def options
         value = {}
-        value[:enclosure_type] = @entry.enclosure_type if @entry.try(:enclosure_type)
-        value[:description] = feed.description if feed.try(:description)
-        value[:itunes_author] = feed.itunes_author if feed.try(:itunes_author)
-        value[:itunes_block] = feed.itunes_block if feed.try(:itunes_block)
-        value[:itunes_image] = feed.itunes_image if feed.try(:itunes_image)
-        value[:itunes_explicit] = feed.itunes_explicit if feed.try(:itunes_explicit)
-        value[:itunes_complete] = feed.itunes_complete if feed.try(:itunes_complete)
-        value[:itunes_keywords] = feed.itunes_keywords if feed.try(:itunes_keywords)
-        value[:itunes_type] = feed.itunes_type if feed.try(:itunes_type)
+        value[:enclosure_type]      = @entry.enclosure_type if @entry.try(:enclosure_type)
+        value[:description]         = feed.description if feed.try(:description)
+        value[:itunes_author]       = feed.itunes_author if feed.try(:itunes_author)
+        value[:itunes_block]        = feed.itunes_block if feed.try(:itunes_block)
+        value[:itunes_image]        = feed.itunes_image if feed.try(:itunes_image)
+        value[:itunes_explicit]     = feed.itunes_explicit if feed.try(:itunes_explicit)
+        value[:itunes_complete]     = feed.itunes_complete if feed.try(:itunes_complete)
+        value[:itunes_keywords]     = feed.itunes_keywords if feed.try(:itunes_keywords)
+        value[:itunes_type]         = feed.itunes_type if feed.try(:itunes_type)
         value[:itunes_new_feed_url] = feed.itunes_new_feed_url if feed.try(:itunes_new_feed_url)
-        value[:itunes_subtitle] = feed.itunes_subtitle if feed.try(:itunes_subtitle)
-        value[:itunes_summary] = feed.itunes_summary if feed.try(:itunes_summary)
-        value[:itunes_categories] = feed.itunes_categories if feed.try(:itunes_categories)
-        value[:itunes_owners] = itunes_owners if feed.try(:itunes_owners)
+        value[:itunes_subtitle]     = feed.itunes_subtitle if feed.try(:itunes_subtitle)
+        value[:itunes_summary]      = feed.itunes_summary if feed.try(:itunes_summary)
+        value[:itunes_categories]   = feed.itunes_categories if feed.try(:itunes_categories)
+        value[:itunes_owners]       = itunes_owners if feed.try(:itunes_owners)
+        if feed.try(:image) && !feed.image.try(:url).nil?
+          value[:image] = {
+            url: feed.image.try(:url)
+          }
+          value[:image][:description] = feed.image.description if feed.image.try(:description)
+          value[:image][:height] = feed.image.height if feed.image.try(:height)
+          value[:image][:link] = feed.image.link if feed.image.try(:link)
+          value[:image][:title] = feed.image.title if feed.image.try(:title)
+          value[:image][:url] = feed.image.url if feed.image.try(:url)
+          value[:image][:width] = feed.image.width if feed.image.try(:width)
+        end
         value
       end
 

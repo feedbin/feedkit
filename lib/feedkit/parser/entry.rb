@@ -5,6 +5,8 @@ module Feedkit
     class Entry
       ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :title, :url, :guid]
 
+      attr_reader :entry
+
       def initialize(entry, feed_url, extra_data = {})
         @entry = entry
         @feed_url = feed_url

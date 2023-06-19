@@ -35,8 +35,8 @@ class Feedkit::Parser::XMLEntryTest < Minitest::Test
     entry = OpenStruct.new(url: "http://example.com/post", published: Date.parse("2010-10-31"), title: "title")
     parsed_entry = ::Feedkit::Parser::XMLEntry.new(entry, feed_url)
     assert_equal("65a8274e8ab7f4ae53a3c4f8c9b82f62315c5623", parsed_entry.public_id)
-    assert_equal("93ff9a08740e7c0dce935045317f2e83", parsed_entry.to_entry[:fingerprint])
-    assert_equal("ad18df62a220d9b51c5feabeee39ddf4", parsed_entry.guid)
+    assert_equal("b4026a8ac407764dc625871eb463b29e", parsed_entry.to_entry[:fingerprint])
+    assert_equal("6611b142cd5d7d20a3221d4e37fefdf7", parsed_entry.guid)
   end
 
   def test_public_id_without_entry_id_and_published
@@ -44,8 +44,8 @@ class Feedkit::Parser::XMLEntryTest < Minitest::Test
     entry = OpenStruct.new(url: "http://example.com/post", published: nil, title: "title")
     parsed_entry = ::Feedkit::Parser::XMLEntry.new(entry, feed_url)
     assert_equal("4c47ebc1d14231a8202036886fd4a698a0a0baf8", parsed_entry.public_id)
-    assert_equal("5856d6fd71f6a4c464e4200acab44df5", parsed_entry.to_entry[:fingerprint])
-    assert_equal("ad18df62a220d9b51c5feabeee39ddf4", parsed_entry.guid)
+    assert_equal("25975f98cebe57ee16ebd567e4e28b93", parsed_entry.to_entry[:fingerprint])
+    assert_equal("6611b142cd5d7d20a3221d4e37fefdf7", parsed_entry.guid)
   end
 
   def test_public_id_without_entry_id_and_published_and_title

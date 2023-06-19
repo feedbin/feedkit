@@ -34,7 +34,7 @@ module Feedkit
 
       def guid
         normalized = remove_protocol_and_host(uri: entry_id) unless entry_id.nil?
-        normalized = build_id(normalized, include_published: false)
+        normalized = build_id(normalized, compatibility_mode: false)
         Digest::MD5.hexdigest(normalized)
       end
 
@@ -42,14 +42,18 @@ module Feedkit
         to_entry[:fingerprint]
       end
 
-      def build_id(base_entry_id, include_published: true)
+      def build_id(base_entry_id, compatibility_mode: true)
         parts = []
         parts.push(@feed_url)
         parts.push(base_entry_id)
         unless entry_id
-          parts.push(url)
-          parts.push(published.iso8601) if include_published && published.respond_to?(:iso8601)
-          parts.push(title)
+          if compatibility_mode
+            parts.push(url)
+            parts.push(published.iso8601) if published.respond_to?(:iso8601)
+            parts.push(title)
+          else
+            parts.push(url || title)
+          end
         end
         parts.compact.join
       end
@@ -85,10 +89,16 @@ module Feedkit
       def remove_protocol_and_host(uri:)
         parsed = URI(uri)
         result = [parsed.userinfo, parsed.path, parsed.query, parsed.fragment].join
-        result == "" ? uri : result
+        if result == "" || result == "/"
+          uri
+        else
+          result
+        end
       rescue
-        uri.gsub!("http:", "")
-        uri.gsub!("https:", "")
+        if uri.respond_to?(:gsub!)
+          uri.gsub!("http:", "")
+          uri.gsub!("https:", "")
+        end
         uri
       end
     end

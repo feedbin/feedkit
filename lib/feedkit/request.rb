@@ -94,11 +94,19 @@ module Feedkit
     end
 
     def request
-      response = client.get(@parsed_url.url)
+      response = client.get(@parsed_url.url, ssl_context: ssl_context)
       response_error!(response) unless success?(response)
       response
     rescue => exception
       request_error!(exception)
+    end
+
+    def ssl_context
+      defaults = OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options]
+      options =  defaults |= OpenSSL::SSL::OP_LEGACY_SERVER_CONNECT
+      OpenSSL::SSL::SSLContext.new.tap do |context|
+        context.set_params(options: options)
+      end
     end
 
     def success?(response)

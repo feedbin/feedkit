@@ -102,8 +102,7 @@ module Feedkit
     end
 
     def ssl_context
-      defaults = OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options]
-      options =  defaults |= OpenSSL::SSL::OP_LEGACY_SERVER_CONNECT
+      options = OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options] | OpenSSL::SSL::OP_LEGACY_SERVER_CONNECT
       OpenSSL::SSL::SSLContext.new.tap do |context|
         context.set_params(options: options)
       end

@@ -10,7 +10,7 @@ module Feedkit
       end
 
       def entry_id
-        @entry["id"] ? @entry["id"].strip : nil
+        @entry["id"] ? @entry["id"].to_s.strip : nil
       end
 
       def author

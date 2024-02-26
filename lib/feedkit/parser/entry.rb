@@ -3,7 +3,7 @@
 module Feedkit
   module Parser
     class Entry
-      ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :title, :url, :guid]
+      ENTRY_ATTRIBUTES = Set[:author, :content, :data, :entry_id, :public_id, :published, :title, :url, :categories, :guid]
 
       attr_reader :entry
 
@@ -76,6 +76,14 @@ module Feedkit
 
       def source
         Socket.gethostname
+      end
+
+      def categories
+        base = @entry.categories&.respond_to?(:map) ? @entry.categories : []
+        base
+          .map(&:to_s)
+          .map(&:strip)
+          .reject(&:empty?)
       end
 
       private

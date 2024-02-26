@@ -64,6 +64,11 @@ module Feedkit
         nil
       end
 
+      def categories
+        base = (@entry["tags"].respond_to?(:map)) ? @entry["tags"] : []
+        clean_categories(base)
+      end
+
       def title
         @entry["title"] ? @entry["title"].strip : nil
       end

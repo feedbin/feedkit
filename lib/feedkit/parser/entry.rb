@@ -79,14 +79,18 @@ module Feedkit
       end
 
       def categories
-        base = @entry.categories&.respond_to?(:map) ? @entry.categories : []
-        base
+        base = (@entry.respond_to?(:categories) && @entry.categories&.respond_to?(:map)) ? @entry.categories : []
+        clean_categories(base)
+      end
+
+      private
+
+      def clean_categories(items)
+        items
           .map(&:to_s)
           .map(&:strip)
           .reject(&:empty?)
       end
-
-      private
 
       def parsed_uri(uri:)
         uri = URI(uri)

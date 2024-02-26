@@ -30,5 +30,6 @@ class FeedkitTest < Minitest::Test
 
     assert_equal([{"name"=>"Chris Parrish"}], parsed.entries.first.to_entry.dig(:data, :json_feed, :authors))
     assert_equal([{"name"=>"Brent Simmons"}, {"name"=>"Chris Parrish"}], parsed.entries.last.to_entry.dig(:data, :json_feed, :authors))
+    assert_equal(["one two", "three"], parsed.entries.last.to_entry.dig(:categories))
   end
 end

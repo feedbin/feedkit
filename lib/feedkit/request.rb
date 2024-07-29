@@ -69,7 +69,7 @@ module Feedkit
       http = HTTP
        .headers(headers)
        .follow(max_hops: 4, on_redirect: @on_redirect)
-       .timeout(connect: 10, write: 5, read: 30)
+       .timeout(connect: 5, write: 5, read: 30)
        .encoding(Encoding::BINARY)
 
       http = http.use(:auto_inflate) if @auto_inflate

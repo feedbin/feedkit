@@ -74,6 +74,7 @@ module Feedkit
         value[:itunes_subtitle]     = feed.itunes_subtitle if feed.try(:itunes_subtitle)
         value[:itunes_summary]      = feed.itunes_summary if feed.try(:itunes_summary)
         value[:itunes_categories]   = feed.itunes_categories if feed.try(:itunes_categories)
+        value[:youtube_channel_id]  = feed.youtube_channel_id if feed.try(:youtube_channel_id)
         value[:itunes_owners]       = itunes_owners if feed.try(:itunes_owners)
         if feed.try(:image) && !feed.image.try(:url).nil?
           value[:image] = {

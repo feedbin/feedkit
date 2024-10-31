@@ -60,6 +60,7 @@ module Feedkit
           media_height
           media_width
           youtube_video_id
+          youtube_channel_id
         ]
 
         hash = extract_attributes(@entry, attributes)

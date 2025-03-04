@@ -125,12 +125,25 @@ class Feedkit::RequestTest < Minitest::Test
     stub_request(:get, first_url).to_return(response)
     stub_request(:get, last_url)
 
-    on_redirect = proc do |_, to|
-      @location = to.uri.to_s
-    end
+    response = ::Feedkit::Request.download(first_url)
+    assert_equal last_url, response.url
+  end
 
-    response = ::Feedkit::Request.download(first_url, on_redirect: on_redirect)
-    assert_equal last_url, @location
+  def test_should_not_follow_temporary_redirects
+    first_url = "http://www.example.com"
+    last_url = "#{first_url}/final"
+
+    response = {
+      status: 302,
+      headers: {
+        "Location" => last_url
+      }
+    }
+    stub_request(:get, first_url).to_return(response)
+    stub_request(:get, last_url)
+
+    response = ::Feedkit::Request.download(first_url)
+    assert_equal first_url, response.url
   end
 
   def test_should_get_caching_headers

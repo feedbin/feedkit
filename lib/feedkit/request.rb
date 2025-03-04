@@ -23,6 +23,7 @@ module Feedkit
       @user_agent    = user_agent
       @last_modified = last_modified
       @etag          = etag
+      @redirects     = []
     end
 
     def download
@@ -32,7 +33,7 @@ module Feedkit
 
       response = request
       if response.status.code == 304
-        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url)
+        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url, redirects: @redirects)
       else
         download_to_file(response)
       end
@@ -59,7 +60,7 @@ module Feedkit
       tempfile.open # flush written content
       tempfile.rewind
 
-      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url)
+      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: @redirects)
     rescue
       tempfile&.close
       raise
@@ -68,7 +69,7 @@ module Feedkit
     def client
       http = HTTP
        .headers(headers)
-       .follow(max_hops: 4, on_redirect: @on_redirect)
+       .follow(max_hops: 4, on_redirect: on_redirect)
        .timeout(connect: 5, write: 5, read: 30)
        .encoding(Encoding::BINARY)
 
@@ -90,6 +91,12 @@ module Feedkit
     def basic_auth
       if @username && @password
         @basic_auth ||= "Basic " + Base64.strict_encode64("#{@username}:#{@password}")
+      end
+    end
+
+    def on_redirect
+      proc do |from, to|
+        @redirects.push Redirect.new(status: from.status.code, from: from.uri.to_s, to: to.uri.to_s)
       end
     end
 

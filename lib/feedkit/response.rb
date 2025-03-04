@@ -4,13 +4,14 @@ require "digest"
 
 module Feedkit
   class Response
-    attr_reader :path
+    attr_reader :path, :redirects
 
-    def initialize(tempfile:, response:, parsed_url:)
+    def initialize(tempfile:, response:, parsed_url:, redirects:)
       @tempfile   = tempfile
       @path       = tempfile.path
       @response   = response
       @parsed_url = parsed_url
+      @redirects  = redirects
     end
 
     def body
@@ -50,13 +51,21 @@ module Feedkit
     end
 
     def url
-      result = @response.uri.to_s
+      result = request_url
       if @parsed_url.username && @parsed_url.password
         parts = result.split("/")
         parts[2] = credentials.to_s + parts[2]
         result = parts.join("/")
       end
       result
+    end
+
+    def request_url
+      if !@redirects.empty? && @redirects.all?(&:permanent?)
+        @redirects.last.to
+      else
+        @parsed_url.url.to_s
+      end
     end
 
     def credentials

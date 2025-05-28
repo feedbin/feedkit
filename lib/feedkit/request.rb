@@ -27,7 +27,7 @@ module Feedkit
     end
 
     def download
-      if @url.respond_to?(:host) && curl_hosts.include?(@url.host)
+      if curl_host?
         return Curl.download(@parsed_url.url)
       end
 
@@ -81,10 +81,11 @@ module Feedkit
     def headers
       Hash.new.tap do |hash|
         hash[:user_agent]        = @user_agent || "Feedbin"
-        hash[:accept_encoding]   = "gzip, deflate" if @auto_inflate
-        hash[:if_none_match]     = @etag           unless @etag.nil?
-        hash[:if_modified_since] = @last_modified  unless @last_modified.nil?
-        hash[:authorization]     = basic_auth      unless basic_auth.nil?
+        hash[:accept_encoding]   = "gzip, deflate"   if @auto_inflate
+        hash[:accept]            = "application/xml" if accept_header_host?
+        hash[:if_none_match]     = @etag             unless @etag.nil?
+        hash[:if_modified_since] = @last_modified    unless @last_modified.nil?
+        hash[:authorization]     = basic_auth        unless basic_auth.nil?
       end
     end
 
@@ -152,8 +153,14 @@ module Feedkit
       end
     end
 
-    def curl_hosts
-      ENV["FEEDKIT_CURL_HOSTS"]&.split(",") || []
+    def curl_host?
+      hosts = ENV["FEEDKIT_CURL_HOSTS"]&.split(",") || []
+      @url.respond_to?(:host) && hosts.include?(@url.host)
+    end
+
+    def accept_header_host?
+      hosts = ENV["FEEDKIT_ACCEPT_HOSTS"]&.split(",") || []
+      @url.respond_to?(:host) && hosts.include?(@url.host)
     end
   end
 end

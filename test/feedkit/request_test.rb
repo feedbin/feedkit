@@ -232,4 +232,20 @@ class Feedkit::RequestTest < Minitest::Test
 
     assert_requested(:get, without_auto_inflate) { |request| request.headers["Accept-Encoding"] == nil }
   end
+
+  def test_should_use_accept_header
+    ENV["FEEDKIT_ACCEPT_HOSTS"] = "www.example.com"
+    with_accept_url = "http://www.example.com"
+    stub_request(:any, with_accept_url)
+
+    ::Feedkit::Request.download(with_accept_url)
+
+    assert_requested :get, with_accept_url, headers: {"Accept" => "application/xml"}
+
+    without_accept_url = "http://www.example2.com"
+    stub_request(:any, without_accept_url)
+    ::Feedkit::Request.download(without_accept_url)
+
+    assert_requested(:get, without_accept_url) { |request| request.headers["Accept"] == nil }
+  end
 end

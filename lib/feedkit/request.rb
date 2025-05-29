@@ -33,7 +33,7 @@ module Feedkit
 
       response = request
       if response.status.code == 304
-        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url, redirects: @redirects)
+        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url, redirects: @redirects, proxied: proxy_host?)
       else
         download_to_file(response)
       end
@@ -60,7 +60,7 @@ module Feedkit
       tempfile.open # flush written content
       tempfile.rewind
 
-      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: @redirects)
+      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: @redirects, proxied: proxy_host?)
     rescue
       tempfile&.close
       raise
@@ -82,10 +82,11 @@ module Feedkit
       Hash.new.tap do |hash|
         hash[:user_agent]        = @user_agent || "Feedbin"
         hash[:accept_encoding]   = "gzip, deflate"   if @auto_inflate
-        hash[:accept]            = "application/xml" if accept_header_host?
+        hash[:x_proxy_host]      = @url.host         if proxy_host?
         hash[:if_none_match]     = @etag             unless @etag.nil?
         hash[:if_modified_since] = @last_modified    unless @last_modified.nil?
         hash[:authorization]     = basic_auth        unless basic_auth.nil?
+        hash[:accept]     = "application/xml"
       end
     end
 
@@ -102,7 +103,8 @@ module Feedkit
     end
 
     def request
-      response = client.get(@parsed_url.url, ssl_context: ssl_context)
+      url = proxy_host? ? proxied_url : @parsed_url.url
+      response = client.get(url, ssl_context: ssl_context)
       response_error!(response) unless success?(response)
       response
     rescue => exception
@@ -151,6 +153,15 @@ module Feedkit
       else
         raise exception
       end
+    end
+
+    def proxied_url
+      Feedkit::Rebase.call(target: @url, base: ENV["FEEDKIT_PROXY_HOST"]).to_s
+    end
+
+    def proxy_host?
+      hosts = ENV["FEEDKIT_PROXIED_HOSTS"]&.split(",") || []
+      @url.respond_to?(:host) && hosts.include?(@url.host)
     end
 
     def curl_host?

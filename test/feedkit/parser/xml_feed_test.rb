@@ -45,6 +45,39 @@ class Feedkit::Parser::XMLFeedTest < Minitest::Test
     assert_equal("31b66ce9e7891c7b138782c677d1a012", feed.fingerprint)
   end
 
+  def test_base_url_with_proxy
+    mock_env("FEEDKIT_PROXIED_HOSTS" => "www.example.com", "FEEDKIT_PROXY_HOST" => "https://proxy.com") do
+      url = "https://proxy.com/atom.xml"
+      stub_request_file("atom.xml", url)
+
+      original_url = "http://www.example.com/redirect"
+      response = {
+        status: 301,
+        headers: {
+          "Location" => url
+        }
+      }
+      stub_request(:get, "https://proxy.com/redirect").to_return(response)
+
+      response = ::Feedkit::Request.download(original_url)
+
+      # public id should be generated from http://www.example.com/atom.xml
+      assert_equal("a6e006a2a819d1dd9186e8f3343fc700e9d0ddf3", response.parse.entries.first.public_id)
+
+      response = ::Feedkit::Request.download(original_url)
+
+      feed = ::Feedkit::Parser.parse!(response.body, url: original_url)
+
+      # public id should be generated from http://www.example.com/redirect
+      assert_equal("368ede53b36a81dff3abee0a563f7d5770f4c648", feed.entries.first.public_id)
+      assert_equal("6bdb7118689fba5634b7ff7d15e1cc7f", feed.entries.first.fingerprint)
+      assert_equal("31b66ce9e7891c7b138782c677d1a012", feed.fingerprint)
+
+      # should be rewritten from proxy
+      assert_equal("http://www.example.com/atom.xml", response.request_url)
+    end
+  end
+
   def test_base_url_with_password
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)

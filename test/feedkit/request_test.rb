@@ -59,7 +59,7 @@ class Feedkit::RequestTest < Minitest::Test
     response = {
       status: 401,
       headers: {
-        "WWW-Authenticate" => ' Basic realm="Application"'
+        "WWW-Authenticate" => " Basic realm='Application'"
       }
     }
     stub_request(:get, url).to_return(response)
@@ -233,19 +233,16 @@ class Feedkit::RequestTest < Minitest::Test
     assert_requested(:get, without_auto_inflate) { |request| request.headers["Accept-Encoding"] == nil }
   end
 
-  def test_should_use_accept_header
-    ENV["FEEDKIT_ACCEPT_HOSTS"] = "www.example.com"
-    with_accept_url = "http://www.example.com"
-    stub_request(:any, with_accept_url)
+  def test_should_proxy_url
+    mock_env("FEEDKIT_PROXIED_HOSTS" => "www.example.com", "FEEDKIT_PROXY_HOST" => "http://proxy.com") do
+      request_url = "https://www.example.com/atom.xml"
 
-    ::Feedkit::Request.download(with_accept_url)
+      proxy_url = "http://proxy.com/atom.xml"
+      stub_request_file("atom.xml", proxy_url)
 
-    assert_requested :get, with_accept_url, headers: {"Accept" => "application/xml"}
+      ::Feedkit::Request.download(request_url)
 
-    without_accept_url = "http://www.example2.com"
-    stub_request(:any, without_accept_url)
-    ::Feedkit::Request.download(without_accept_url)
-
-    assert_requested(:get, without_accept_url) { |request| request.headers["Accept"] == nil }
+      assert_requested :get, proxy_url
+    end
   end
 end

@@ -28,7 +28,7 @@ module Feedkit
       out, _, status = Open3.capture3(command % params)
       if status.success?
         response = CurlResponse.new(@parsed_url.url)
-        Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: [])
+        Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: [], proxied: false)
       else
         raise ServerError.new(HTTP::Response::Status.new(500).to_s, nil)
       end

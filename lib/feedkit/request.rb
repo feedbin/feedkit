@@ -86,7 +86,6 @@ module Feedkit
         hash[:if_none_match]     = @etag             unless @etag.nil?
         hash[:if_modified_since] = @last_modified    unless @last_modified.nil?
         hash[:authorization]     = basic_auth        unless basic_auth.nil?
-        hash[:accept]     = "application/xml"
       end
     end
 

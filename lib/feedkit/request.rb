@@ -111,9 +111,8 @@ module Feedkit
     end
 
     def ssl_context
-      options = OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options] | OpenSSL::SSL::OP_LEGACY_SERVER_CONNECT
       OpenSSL::SSL::SSLContext.new.tap do |context|
-        context.set_params(options: options)
+        context.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
     end
 

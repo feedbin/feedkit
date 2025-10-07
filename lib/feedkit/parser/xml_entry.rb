@@ -4,7 +4,7 @@ module Feedkit
   module Parser
     class XMLEntry < Entry
       def entry_id
-        @entry.entry_id ? @entry.entry_id.strip : nil
+        @entry.entry_id.respond_to?(:strip) ? @entry.entry_id.strip : nil
       end
 
       def author

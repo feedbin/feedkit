@@ -76,11 +76,11 @@ module Feedkit
       end
 
       def title
-        @entry.title ? @entry.title.strip : nil
+        @entry.title.respond_to?(:strip) ? @entry.title.strip : nil
       end
 
       def url
-        @entry.url ? @entry.url.strip : nil
+        @entry.url.respond_to?(:strip) ? @entry.url.strip : nil
       end
 
       def media

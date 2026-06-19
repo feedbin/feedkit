@@ -34,9 +34,11 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "http", "~> 5.0"
   spec.add_runtime_dependency "rchardet", "~> 1.8.0"
   spec.add_runtime_dependency "addressable", "~> 2.8.0"
+  spec.add_runtime_dependency "ostruct"
+  spec.add_runtime_dependency "cgi"
 
-  spec.add_development_dependency "bundler", "~> 2.1"
-  spec.add_development_dependency "rake", "~> 13"
+  spec.add_development_dependency "bundler"
+  spec.add_development_dependency "rake"
   spec.add_development_dependency "minitest", "~> 5.14"
-  spec.add_development_dependency "webmock", "~> 3.8"
+  spec.add_development_dependency "webmock"
 end

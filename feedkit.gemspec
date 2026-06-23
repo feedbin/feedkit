@@ -29,13 +29,12 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "feedjira", ">= 2.0"
-  spec.add_runtime_dependency "twitter", "~> 7.0"
-  spec.add_runtime_dependency "twitter-text", "~> 3.1.0"
-  spec.add_runtime_dependency "http", "~> 5.0"
+  spec.add_runtime_dependency "http", "~> 6.0"
   spec.add_runtime_dependency "rchardet", "~> 1.8.0"
   spec.add_runtime_dependency "addressable", "~> 2.8.0"
   spec.add_runtime_dependency "ostruct"
   spec.add_runtime_dependency "cgi"
+  spec.add_runtime_dependency "base64"
 
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"

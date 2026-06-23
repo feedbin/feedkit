@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "digest"
+require "base64"
 require "http"
 require_relative "errors"
 
@@ -134,7 +135,7 @@ module Feedkit
 
     def request_error!(exception)
       case exception
-      when HTTP::Request::UnsupportedSchemeError, Addressable::URI::InvalidURIError
+      when HTTP::RequestError, Addressable::URI::InvalidURIError, URI::InvalidURIError
         raise InvalidUrl, exception.message
       when HTTP::ConnectionError
         raise ConnectionError, exception.message

@@ -97,6 +97,38 @@ class Feedkit::RequestTest < Minitest::Test
     end
   end
 
+  def test_should_raise_invalid_url_on_malformed_redirect
+    first_url = "http://www.example.com"
+
+    response = {
+      status: 301,
+      headers: {
+        "Location" => "http://exa mple.com/atom.xml"
+      }
+    }
+    stub_request(:get, first_url).to_return(response)
+
+    assert_raises Feedkit::InvalidUrl do
+      ::Feedkit::Request.download(first_url)
+    end
+  end
+
+  def test_should_raise_invalid_url_on_unparseable_redirect
+    first_url = "http://www.example.com"
+
+    response = {
+      status: 301,
+      headers: {
+        "Location" => "http://[/atom.xml"
+      }
+    }
+    stub_request(:get, first_url).to_return(response)
+
+    assert_raises Feedkit::InvalidUrl do
+      ::Feedkit::Request.download(first_url)
+    end
+  end
+
   def test_should_be_xml
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)

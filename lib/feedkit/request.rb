@@ -14,7 +14,7 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil)
+    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil, block_private_addresses: false)
       @parsed_url    = BasicAuth.parse(url, username: username, password: password)
       @url           = Addressable::URI.heuristic_parse(@parsed_url.url) rescue nil
       @username      = @parsed_url.username
@@ -25,6 +25,7 @@ module Feedkit
       @last_modified = last_modified
       @etag          = etag
       @redirects     = []
+      @block_private_addresses = block_private_addresses
     end
 
     def download
@@ -75,6 +76,10 @@ module Feedkit
        .encoding(Encoding::BINARY)
 
       http = http.use(:auto_inflate) if @auto_inflate
+
+      # Checked before each connection is opened, so every redirect hop is
+      # validated, not just the original host.
+      http = http.blocklist(deny: PrivateAddress.method(:match?)) if @block_private_addresses
 
       http
     end
@@ -135,6 +140,9 @@ module Feedkit
 
     def request_error!(exception)
       case exception
+      when HTTP::BlockedHostError
+        # must precede HTTP::RequestError, which it subclasses
+        raise BlockedHost, exception.message
       when HTTP::RequestError, Addressable::URI::InvalidURIError, URI::InvalidURIError
         raise InvalidUrl, exception.message
       when HTTP::ConnectionError

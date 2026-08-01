@@ -45,6 +45,9 @@ module Feedkit
   # raised when response returned 5xx response
   class ServerError < ResponseError; end
 
+  # raised when the host or one of its addresses is blocked
+  class BlockedHost < Error; end
+
   # raised when there was an error connecting to the server
   class ConnectionError < Error; end
 

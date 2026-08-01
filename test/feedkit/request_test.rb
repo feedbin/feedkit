@@ -1,4 +1,5 @@
 require "test_helper"
+require "webrick"
 
 class Feedkit::RequestTest < Minitest::Test
 
@@ -263,6 +264,71 @@ class Feedkit::RequestTest < Minitest::Test
     ::Feedkit::Request.download(without_auto_inflate, auto_inflate: false)
 
     assert_requested(:get, without_auto_inflate) { |request| request.headers["Accept-Encoding"] == nil }
+  end
+
+  def test_should_block_private_addresses
+    without_webmock do
+      assert_raises Feedkit::BlockedHost do
+        ::Feedkit::Request.download("http://127.0.0.1/atom.xml", block_private_addresses: true)
+      end
+    end
+  end
+
+  def test_should_block_hostnames_resolving_to_private_addresses
+    without_webmock do
+      # blocked on the resolved address, not the literal
+      assert_raises Feedkit::BlockedHost do
+        ::Feedkit::Request.download("http://localhost/atom.xml", block_private_addresses: true)
+      end
+    end
+  end
+
+  def test_should_not_block_private_addresses_by_default
+    url = "http://127.0.0.1/atom.xml"
+    stub_request_file("atom.xml", url)
+
+    response = ::Feedkit::Request.download(url)
+    assert_instance_of Feedkit::Parser::XMLFeed, response.parse
+  end
+
+  def test_should_allow_public_addresses_when_blocking
+    url = "http://www.example.com/atom.xml"
+    stub_request_file("atom.xml", url)
+
+    response = ::Feedkit::Request.download(url, block_private_addresses: true)
+    assert_instance_of Feedkit::Parser::XMLFeed, response.parse
+  end
+
+  # Contract test on the http fork: the blocklist must be enforced per
+  # connection, so a redirect to a private address is rejected on the hop that
+  # reaches it. Feedkit's own criteria block loopback, so this exercises the
+  # guarantee with a narrower blocklist that permits the origin server.
+  def test_blocklist_is_enforced_on_redirect_hops
+    without_webmock do
+      server = WEBrick::HTTPServer.new(
+        Port: 0,
+        Logger: WEBrick::Log.new(File::NULL),
+        AccessLog: []
+      )
+      server.mount_proc("/redirect") do |_request, response|
+        response.status = 301
+        response["Location"] = "http://10.0.0.1/atom.xml"
+      end
+      Thread.new { server.start }
+
+      begin
+        exception = assert_raises HTTP::BlockedHostError do
+          HTTP.blocklist(IPAddr.new("10.0.0.0/8"))
+            .follow(max_hops: 4)
+            .timeout(connect: 2, write: 2, read: 2)
+            .get("http://127.0.0.1:#{server.config[:Port]}/redirect")
+        end
+
+        assert_includes exception.message, "10.0.0.1"
+      ensure
+        server.shutdown
+      end
+    end
   end
 
   def test_should_proxy_url

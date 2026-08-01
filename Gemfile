@@ -4,8 +4,10 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 gem "sax-machine", github: "feedbin/sax-machine", branch: "feedbin"
 gem "feedjira",    github: "feedbin/feedjira",    branch: "f2"
+gem "http",    github: "benubois/http",    branch: "localhost"
 
 group :development do
+  gem "irb"
   gem "dotenv"
   gem "sinatra"
   gem "webrick"

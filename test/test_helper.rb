@@ -20,6 +20,15 @@ def load_body(file)
   File.read(File.join("test", "support", "www", file))
 end
 
+# WebMock replaces HTTP::Client#perform, so no connection is ever built and the
+# blocklist never runs. Tests that exercise it need the real client.
+def without_webmock
+  WebMock.disable!
+  yield
+ensure
+  WebMock.enable!
+end
+
 def mock_env(partial_env_hash)
   old = ENV.to_hash
   ENV.update partial_env_hash

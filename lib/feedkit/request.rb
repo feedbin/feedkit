@@ -14,7 +14,7 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil)
+    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil, block_ssrf: false)
       @parsed_url    = BasicAuth.parse(url, username: username, password: password)
       @url           = Addressable::URI.heuristic_parse(@parsed_url.url) rescue nil
       @username      = @parsed_url.username
@@ -24,11 +24,14 @@ module Feedkit
       @user_agent    = user_agent
       @last_modified = last_modified
       @etag          = etag
+      @block_ssrf    = block_ssrf
       @redirects     = []
     end
 
+    # curl resolves and connects on its own, so addresses can't be checked
+    # before it reaches them and it is skipped entirely when blocking SSRF.
     def download
-      if curl_host?
+      if curl_host? && !@block_ssrf
         return Curl.download(@parsed_url.url)
       end
 
@@ -40,7 +43,7 @@ module Feedkit
       end
     rescue OpenSSL::SSL::SSLError => exception
       # HTTP sometimes has this error that doesn't show up in other clients
-      if exception.message.include?("unexpected eof while reading")
+      if exception.message.include?("unexpected eof while reading") && !@block_ssrf
         return Curl.download(@parsed_url.url)
       else
         raise exception
@@ -104,11 +107,23 @@ module Feedkit
 
     def request
       url = proxy_host? ? proxied_url : @parsed_url.url
-      response = client.get(url, ssl_context: ssl_context)
+      response = client.get(url, **request_options)
       response_error!(response) unless success?(response)
       response
     rescue => exception
       request_error!(exception)
+    end
+
+    def request_options
+      options = {ssl_context: ssl_context}
+      options[:socket_class] = PrivateAddressCheck::Socket if block_ssrf?
+      options
+    end
+
+    # Requests are rewritten to a proxy the operator configured, not to a host
+    # the feed controls, so the address check does not apply to them.
+    def block_ssrf?
+      @block_ssrf && !proxy_host?
     end
 
     def ssl_context

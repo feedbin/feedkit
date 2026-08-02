@@ -265,6 +265,63 @@ class Feedkit::RequestTest < Minitest::Test
     assert_requested(:get, without_auto_inflate) { |request| request.headers["Accept-Encoding"] == nil }
   end
 
+  def test_should_block_private_address
+    real_requests do
+      assert_raises Feedkit::PrivateNetworkAddress do
+        ::Feedkit::Request.download("http://127.0.0.1/", block_ssrf: true)
+      end
+    end
+  end
+
+  def test_should_block_hostname_resolving_to_private_address
+    real_requests do
+      assert_raises Feedkit::PrivateNetworkAddress do
+        ::Feedkit::Request.download("http://localhost/", block_ssrf: true)
+      end
+    end
+  end
+
+  def test_should_not_block_private_address_by_default
+    real_requests do
+      local_server do |port|
+        response = ::Feedkit::Request.download("http://127.0.0.1:#{port}/")
+        assert_equal "hi", response.body
+      end
+    end
+  end
+
+  def test_should_allow_private_address_from_env
+    real_requests do
+      mock_env("FEEDKIT_ALLOWED_PRIVATE_ADDRESSES" => "127.0.0.1") do
+        local_server do |port|
+          response = ::Feedkit::Request.download("http://127.0.0.1:#{port}/", block_ssrf: true)
+          assert_equal "hi", response.body
+        end
+      end
+    end
+  end
+
+  def test_should_block_private_address_on_redirect
+    real_requests do
+      mock_env("FEEDKIT_ALLOWED_PRIVATE_ADDRESSES" => "127.0.0.1") do
+        redirect = "HTTP/1.1 301 Moved Permanently\r\nLocation: http://127.0.0.2/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+        local_server(redirect) do |port|
+          assert_raises Feedkit::PrivateNetworkAddress do
+            ::Feedkit::Request.download("http://127.0.0.1:#{port}/", block_ssrf: true)
+          end
+        end
+      end
+    end
+  end
+
+  def test_should_download_when_blocking_ssrf
+    url = "http://www.example.com/atom.xml"
+    stub_request_file("atom.xml", url)
+    response = ::Feedkit::Request.download(url, block_ssrf: true)
+
+    assert_instance_of Feedkit::Parser::XMLFeed, response.parse
+  end
+
   def test_should_proxy_url
     mock_env("FEEDKIT_PROXIED_HOSTS" => "www.example.com", "FEEDKIT_PROXY_HOST" => "http://proxy.com") do
       request_url = "https://www.example.com/atom.xml"

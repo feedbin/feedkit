@@ -45,8 +45,22 @@ module Feedkit
   # raised when response returned 5xx response
   class ServerError < ResponseError; end
 
-  # raised when the host or one of its addresses is blocked
-  class BlockedHost < Error; end
+  # raised when the host or every one of its addresses is blocked
+  #
+  # Carries the resolution that was judged, so a caller reporting the rejection
+  # does not have to resolve the host again — a second lookup costs another
+  # round trip and can return a different answer than the one actually blocked.
+  class BlockedHost < Error
+    attr_reader :host, :addresses, :blocked
+
+    def initialize(message, host: nil, addresses: [], blocked: [])
+      super(message)
+
+      @host      = host
+      @addresses = addresses
+      @blocked   = blocked
+    end
+  end
 
   # raised when there was an error connecting to the server
   class ConnectionError < Error; end

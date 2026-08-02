@@ -299,6 +299,49 @@ class Feedkit::RequestTest < Minitest::Test
     assert_instance_of Feedkit::Parser::XMLFeed, response.parse
   end
 
+  # The rejection carries what was resolved, so a caller reporting it does not
+  # resolve the host a second time and risk judging a different answer.
+  def test_should_report_the_resolution_that_was_blocked
+    without_webmock do
+      exception = assert_raises Feedkit::BlockedHost do
+        ::Feedkit::Request.download("http://127.0.0.1/atom.xml", block_private_addresses: true)
+      end
+
+      assert_equal "127.0.0.1", exception.host
+      assert_equal ["127.0.0.1"], exception.addresses
+      assert_equal ["127.0.0.1"], exception.blocked
+    end
+  end
+
+  def test_should_report_the_resolution_to_the_observer
+    without_webmock do
+      events = []
+
+      assert_raises Feedkit::BlockedHost do
+        ::Feedkit::Request.download("http://127.0.0.1/atom.xml",
+          block_private_addresses: true,
+          blocklist_observer: ->(event, data) { events << [event, data] })
+      end
+
+      event, data = events.fetch(0)
+
+      assert_equal :resolved, event
+      assert_equal "127.0.0.1", data.fetch(:host)
+      assert_equal ["127.0.0.1"], data.fetch(:blocked)
+      assert_empty data.fetch(:allowed)
+    end
+  end
+
+  def test_should_not_build_a_blocklist_without_blocking
+    url = "http://www.example.com/atom.xml"
+    stub_request_file("atom.xml", url)
+    events = []
+
+    ::Feedkit::Request.download(url, blocklist_observer: ->(event, data) { events << [event, data] })
+
+    assert_empty events
+  end
+
   # Contract test on the http fork: the blocklist must be enforced per
   # connection, so a redirect to a private address is rejected on the hop that
   # reaches it. Feedkit's own criteria block loopback, so this exercises the

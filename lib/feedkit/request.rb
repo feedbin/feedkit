@@ -14,7 +14,7 @@ module Feedkit
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil, block_private_addresses: false)
+    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil, block_private_addresses: false, blocklist_observer: nil)
       @parsed_url    = BasicAuth.parse(url, username: username, password: password)
       @url           = Addressable::URI.heuristic_parse(@parsed_url.url) rescue nil
       @username      = @parsed_url.username
@@ -26,6 +26,7 @@ module Feedkit
       @etag          = etag
       @redirects     = []
       @block_private_addresses = block_private_addresses
+      @blocklist_observer      = blocklist_observer
     end
 
     def download
@@ -78,8 +79,11 @@ module Feedkit
       http = http.use(:auto_inflate) if @auto_inflate
 
       # Checked before each connection is opened, so every redirect hop is
-      # validated, not just the original host.
-      http = http.blocklist(deny: PrivateAddress.method(:match?)) if @block_private_addresses
+      # validated, not just the original host. The observer, when given, reports
+      # what each hop resolved to and which address every dial attempt used.
+      if @block_private_addresses
+        http = http.blocklist(deny: PrivateAddress.method(:match?), observer: @blocklist_observer)
+      end
 
       http
     end
@@ -142,7 +146,10 @@ module Feedkit
       case exception
       when HTTP::BlockedHostError
         # must precede HTTP::RequestError, which it subclasses
-        raise BlockedHost, exception.message
+        raise BlockedHost.new(exception.message,
+          host:      exception.host,
+          addresses: exception.addresses,
+          blocked:   exception.blocked)
       when HTTP::RequestError, Addressable::URI::InvalidURIError, URI::InvalidURIError
         raise InvalidUrl, exception.message
       when HTTP::ConnectionError

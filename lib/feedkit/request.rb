@@ -73,7 +73,11 @@ module Feedkit
       http = HTTP
        .headers(headers)
        .follow(max_hops: 4, on_redirect: on_redirect)
-       .timeout(connect: 5, write: 5, read: 30)
+       # resolve is deliberately far above connect: name resolution is a
+       # separate phase, and a resolver retrying an unanswered nameserver
+       # routinely needs more than 5s. Bounding it with the connect budget
+       # turned slow-but-successful lookups into hard failures.
+       .timeout(connect: 5, write: 5, read: 30, resolve: 15)
        .encoding(Encoding::BINARY)
 
       http = http.use(:auto_inflate) if @auto_inflate

@@ -301,6 +301,51 @@ class Feedkit::RequestTest < Minitest::Test
     end
   end
 
+  # FEEDKIT_CURL_HOSTS is an operator-curated list, not something a feed can
+  # steer, and those hosts need curl to be fetched at all. Dropping the shortcut
+  # while blocking would break every one of them rather than protect anything.
+  def test_should_keep_the_curl_shortcut_when_blocking_ssrf
+    called = []
+    url = "http://www.example.com/atom.xml"
+    stub_request_file("atom.xml", url)
+
+    mock_env("FEEDKIT_CURL_HOSTS" => "www.example.com") do
+      ::Feedkit::Curl.stub(:download, ->(given) { called << given }) do
+        ::Feedkit::Request.download(url, block_ssrf: true)
+      end
+    end
+
+    assert_equal [url], called
+    assert_not_requested :get, url
+  end
+
+  # Unlike the curated list, this fallback is reachable by any host, so a feed
+  # must not be able to get itself fetched by curl by failing a handshake.
+  def test_should_not_fall_back_to_curl_on_ssl_error_when_blocking_ssrf
+    request = ::Feedkit::Request.new("https://www.example.com/atom.xml", block_ssrf: true)
+
+    request.stub(:request, ->(*) { raise OpenSSL::SSL::SSLError, "unexpected eof while reading" }) do
+      ::Feedkit::Curl.stub(:download, ->(*) { flunk "must not reach curl" }) do
+        assert_raises OpenSSL::SSL::SSLError do
+          request.download
+        end
+      end
+    end
+  end
+
+  def test_should_still_fall_back_to_curl_on_ssl_error_without_blocking
+    called = []
+    request = ::Feedkit::Request.new("https://www.example.com/atom.xml")
+
+    request.stub(:request, ->(*) { raise OpenSSL::SSL::SSLError, "unexpected eof while reading" }) do
+      ::Feedkit::Curl.stub(:download, ->(given) { called << given }) do
+        request.download
+      end
+    end
+
+    assert_equal ["https://www.example.com/atom.xml"], called
+  end
+
   def test_should_block_private_address_on_redirect
     real_requests do
       mock_env("FEEDKIT_ALLOWED_PRIVATE_ADDRESSES" => "127.0.0.1") do

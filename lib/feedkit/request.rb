@@ -28,10 +28,12 @@ module Feedkit
       @redirects     = []
     end
 
-    # curl resolves and connects on its own, so addresses can't be checked
-    # before it reaches them and it is skipped entirely when blocking SSRF.
+    # curl resolves and connects on its own, so its addresses can't be checked
+    # before it reaches them. FEEDKIT_CURL_HOSTS is an operator-curated list of
+    # known-safe hosts rather than anything a feed can steer, so the shortcut
+    # stays even when blocking SSRF: these hosts need curl to be fetched at all.
     def download
-      if curl_host? && !@block_ssrf
+      if curl_host?
         return Curl.download(@parsed_url.url)
       end
 
@@ -42,7 +44,10 @@ module Feedkit
         download_to_file(response)
       end
     rescue OpenSSL::SSL::SSLError => exception
-      # HTTP sometimes has this error that doesn't show up in other clients
+      # HTTP sometimes has this error that doesn't show up in other clients.
+      # This fallback applies to any host, not just the curated list, so it
+      # stays disabled when blocking: an arbitrary feed must not be able to
+      # reach curl by failing a handshake.
       if exception.message.include?("unexpected eof while reading") && !@block_ssrf
         return Curl.download(@parsed_url.url)
       else

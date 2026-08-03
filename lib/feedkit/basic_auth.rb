@@ -16,7 +16,9 @@ module Feedkit
     end
 
     def parse
-      uri = @data.to_str.dup.strip
+      # strip already returns a fresh String, so the sub! calls below never
+      # reach the caller's object and no dup is needed
+      uri = @data.to_str.strip
       case uri
       when /^http:\//i
         uri.sub!(/^http:\/+/i, "http://")
@@ -32,20 +34,27 @@ module Feedkit
         uri = "http://#{uri}"
       end
 
-      uri_parts = uri.split("/", -1)
-      host = uri_parts[2]
-      if host && host.include?("@") && (host.include?(":") || host.include?("%3A") )
-        host_parts = host.gsub("%3A", ":").split("@", -1)
-        credentials = host_parts.shift
-        host = host_parts.join("@")
-        credentials = credentials.split(":", -1)
-        @base_username = credentials.shift
-        @base_password = credentials.join(":")
+      # Credentials only ever live in the authority, so a URI with no "@" at all
+      # can't have any. Splitting it would just rebuild an identical string, so
+      # the common case skips the round trip entirely.
+      if uri.include?("@")
+        uri_parts = uri.split("/", -1)
+        host = uri_parts[2]
+        if host && host.include?("@") && (host.include?(":") || host.include?("%3A") )
+          host_parts = host.gsub("%3A", ":").split("@", -1)
+          credentials = host_parts.shift
+          host = host_parts.join("@")
+          credentials = credentials.split(":", -1)
+          @base_username = credentials.shift
+          @base_password = credentials.join(":")
 
-        uri_parts[2] = host
+          uri_parts[2] = host
+        end
+
+        @url = uri_parts.join("/")
+      else
+        @url = uri
       end
-
-      @url = uri_parts.join("/")
 
       self
     end

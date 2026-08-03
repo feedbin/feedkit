@@ -56,21 +56,9 @@ class Feedkit::PrivateAddressCheckTest < Minitest::Test
     end
   end
 
-  def test_should_allow_addresses_from_env
-    mock_env("FEEDKIT_ALLOWED_PRIVATE_ADDRESSES" => "127.0.0.1, 10.0.0.0/8") do
-      assert Feedkit::PrivateAddressCheck.allowed_address?(IPAddr.new("127.0.0.1")), "127.0.0.1 should be allowed"
-      assert Feedkit::PrivateAddressCheck.allowed_address?(IPAddr.new("10.1.2.3")), "10.1.2.3 should be allowed"
-      refute Feedkit::PrivateAddressCheck.allowed_address?(IPAddr.new("127.0.0.2")), "127.0.0.2 should not be allowed"
-    end
-  end
-
-  def test_should_allow_no_addresses_by_default
-    refute Feedkit::PrivateAddressCheck.allowed_address?(IPAddr.new("127.0.0.1")), "127.0.0.1 should not be allowed"
-  end
-
   def test_should_check_addresses_before_connecting
     exception = assert_raises Feedkit::PrivateNetworkAddress do
-      Feedkit::PrivateAddressCheck::Socket.check_private_address!("127.0.0.1", "localhost")
+      Feedkit::PrivateAddressCheck::Socket.check_private_address!(IPAddr.new("127.0.0.1"), "localhost")
     end
 
     assert_includes exception.message, "localhost"
@@ -80,10 +68,20 @@ class Feedkit::PrivateAddressCheckTest < Minitest::Test
   def test_should_resolve_hostnames_to_addresses
     addresses = Feedkit::PrivateAddressCheck::Socket.addresses("localhost", 5)
 
-    assert_includes addresses, "127.0.0.1"
+    assert_includes addresses.map(&:to_s), "127.0.0.1"
   end
 
   def test_should_pass_through_literal_addresses
-    assert_equal ["93.184.216.34"], Feedkit::PrivateAddressCheck::Socket.addresses("93.184.216.34", 5)
+    addresses = Feedkit::PrivateAddressCheck::Socket.addresses("93.184.216.34", 5)
+
+    assert_equal ["93.184.216.34"], addresses.map(&:to_s)
+  end
+
+  def test_should_refuse_a_host_that_answers_with_any_private_address
+    Feedkit::PrivateAddressCheck::Socket.stub(:addresses, [IPAddr.new("93.184.216.34"), IPAddr.new("127.0.0.1")]) do
+      assert_raises Feedkit::PrivateNetworkAddress do
+        Feedkit::PrivateAddressCheck::Socket.open("mixed.example.com", 80)
+      end
+    end
   end
 end

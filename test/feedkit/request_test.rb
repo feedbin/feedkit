@@ -290,17 +290,6 @@ class Feedkit::RequestTest < Minitest::Test
     end
   end
 
-  def test_should_allow_private_address_from_env
-    real_requests do
-      mock_env("FEEDKIT_ALLOWED_PRIVATE_ADDRESSES" => "127.0.0.1") do
-        local_server do |port|
-          response = ::Feedkit::Request.download("http://127.0.0.1:#{port}/", block_ssrf: true)
-          assert_equal "hi", response.body
-        end
-      end
-    end
-  end
-
   # FEEDKIT_CURL_HOSTS is an operator-curated list, not something a feed can
   # steer, and those hosts need curl to be fetched at all. Dropping the shortcut
   # while blocking would break every one of them rather than protect anything.
@@ -346,14 +335,21 @@ class Feedkit::RequestTest < Minitest::Test
     assert_equal ["https://www.example.com/atom.xml"], called
   end
 
+  # Every hop gets its own connection, so the redirect target is checked the
+  # same way the original request was. Only a local server can serve the
+  # redirect, so the address it listens on is the one hole in the check here.
   def test_should_block_private_address_on_redirect
+    first_hop = IPAddr.new("127.0.0.1")
+
     real_requests do
-      mock_env("FEEDKIT_ALLOWED_PRIVATE_ADDRESSES" => "127.0.0.1") do
-        redirect = "HTTP/1.1 301 Moved Permanently\r\nLocation: http://127.0.0.2/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
-        local_server(redirect) do |port|
-          assert_raises Feedkit::PrivateNetworkAddress do
+      redirect = "HTTP/1.1 301 Moved Permanently\r\nLocation: http://127.0.0.2/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+      local_server(redirect) do |port|
+        Feedkit::PrivateAddressCheck.stub(:private_address?, ->(address) { address != first_hop }) do
+          exception = assert_raises Feedkit::PrivateNetworkAddress do
             ::Feedkit::Request.download("http://127.0.0.1:#{port}/", block_ssrf: true)
           end
+
+          assert_includes exception.message, "127.0.0.2"
         end
       end
     end

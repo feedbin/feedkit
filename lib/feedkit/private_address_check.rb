@@ -6,10 +6,8 @@ require "socket"
 require "http"
 require_relative "errors"
 
+# Ported from Mastodon's PrivateAddressCheck.
 module Feedkit
-  # Identifies addresses that are not routable on the public internet.
-  #
-  # Ported from Mastodon's PrivateAddressCheck.
   module PrivateAddressCheck
     CIDR_LIST = [
       # IPv4 addresses
@@ -39,120 +37,116 @@ module Feedkit
       IPAddr.new("fc00::/7"),        # Unique local address
       IPAddr.new("3fff::/20"),       # Addresses used in documentation and example source code
       IPAddr.new("ff00::/8")         # Multicast
-    ].freeze
+    ].each(&:freeze).freeze
 
     module_function
 
     def private_address?(address)
-      address = address.native if address.ipv6? && (address.ipv4_mapped? || address.ipv4_compat?)
+      # An IPv4-mapped or IPv4-compatible IPv6 address reaches the same host as
+      # the IPv4 address it embeds, and an IPv4 range never matches an IPv6
+      # address, so the IPv4 form is what gets compared. IPAddr#native returns
+      # the address unchanged when there is nothing to unwrap.
+      address = address.native if address.ipv6?
       address.private? || address.loopback? || address.link_local? || CIDR_LIST.any? { |cidr| cidr.include?(address) }
-    end
-
-    # Private addresses the operator has explicitly opted back in to, set with
-    # FEEDKIT_ALLOWED_PRIVATE_ADDRESSES as a comma or space separated list of
-    # addresses and CIDR ranges.
-    def allowed_address?(address)
-      allowed_addresses.any? { |range| range.include?(address) }
-    end
-
-    def allowed_addresses
-      ENV["FEEDKIT_ALLOWED_PRIVATE_ADDRESSES"].to_s.split(/[\s,]+/).reject(&:empty?).map { |address| IPAddr.new(address) }
     end
 
     # Opens TCP connections, refusing any address that is not routable on the
     # public internet.
-    #
-    # Hostnames are resolved here rather than by the socket so every candidate
-    # address can be checked, and the connection is then made to the address
-    # that was checked. Letting the socket resolve the name a second time would
-    # leave room for the answer to change in between.
-    #
-    # Ported from Mastodon's Request::Socket.
     class Socket < ::TCPSocket
       CONNECT_TIMEOUT = 5
       RESOLV_TIMEOUT = 5
 
       class << self
         def open(host, port = nil, connect_timeout: nil, resolv_timeout: nil, **)
+          socks = []
+          address_by_socket = {}
+          outer_exception = nil
+
           connect_timeout ||= CONNECT_TIMEOUT
           resolv_timeout ||= RESOLV_TIMEOUT
 
-          outer_e = nil
-          socks = []
-          addr_by_socket = {}
+          # Every candidate is checked before anything is opened. Checking as we
+          # go would let a connection error from a later address overwrite the
+          # rejection, hiding why the request was refused, and would connect to
+          # a host that answers with a mix of public and private addresses.
+          candidates = addresses(host, resolv_timeout)
+          candidates.each { |address| check_private_address!(address, host) }
 
-          addresses(host, resolv_timeout).each do |address|
-            check_private_address!(address, host)
+          # A deadline rather than a per-select timeout: a socket that becomes
+          # writable only to fail restarts the loop, and each restart would
+          # otherwise be granted the full timeout again.
+          deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + connect_timeout
 
-            sock = ::Socket.new(ipv6?(address) ? ::Socket::AF_INET6 : ::Socket::AF_INET, ::Socket::SOCK_STREAM, 0)
-            sockaddr = ::Socket.pack_sockaddr_in(port, address)
+          candidates.each do |address|
+            sock = ::Socket.new(address.ipv6? ? ::Socket::AF_INET6 : ::Socket::AF_INET, ::Socket::SOCK_STREAM, 0)
+            sockaddr = ::Socket.pack_sockaddr_in(port, address.to_s)
 
             sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, 1)
             sock.connect_nonblock(sockaddr)
 
             # If that hasn't raised an exception, we somehow managed to connect
-            # immediately, close pending sockets and return immediately
-            socks.each(&:close)
+            # immediately and can return without waiting on the others
             return sock
           rescue IO::WaitWritable
             socks << sock
-            addr_by_socket[sock] = sockaddr
+            address_by_socket[sock] = sockaddr
           rescue => exception
-            outer_e = exception
+            sock&.close
+            outer_exception = exception
           end
 
           until socks.empty?
-            _, writable, = IO.select(nil, socks, nil, connect_timeout)
+            remaining = deadline - Process.clock_gettime(Process::CLOCK_MONOTONIC)
+            ready = (remaining > 0) ? IO.select(nil, socks, nil, remaining) : nil
 
-            if writable.nil?
-              socks.each(&:close)
+            if ready.nil?
               raise HTTP::TimeoutError, "Connect timed out after #{connect_timeout} seconds"
             end
+
+            _, writable, = ready
 
             writable.each do |sock|
               socks.delete(sock)
 
               begin
-                sock.connect_nonblock(addr_by_socket[sock])
+                sock.connect_nonblock(address_by_socket[sock])
               rescue Errno::EISCONN
                 # Do nothing
               rescue => exception
                 sock.close
-                outer_e = exception
+                outer_exception = exception
                 next
               end
 
-              socks.each(&:close)
               return sock
             end
           end
 
-          raise outer_e if outer_e
+          raise outer_exception if outer_exception
 
           raise SocketError, "no address for #{host}"
+        ensure
+          # Whatever is still pending lost the race, timed out, or was abandoned
+          # by an exception on the way out. The socket being returned has always
+          # been taken out of the list by this point.
+          socks.each(&:close)
         end
 
         alias_method :new, :open
 
         def check_private_address!(address, host)
-          address = IPAddr.new(address)
-
-          return if PrivateAddressCheck.allowed_address?(address)
           return unless PrivateAddressCheck.private_address?(address)
 
           raise PrivateNetworkAddress, "#{host} resolves to a private address: #{address}"
         end
 
         def addresses(host, timeout)
-          [IPAddr.new(host).to_s]
+          [IPAddr.new(host)]
         rescue IPAddr::InvalidAddressError
           resolvers = [Resolv::Hosts.new, Resolv::DNS.new.tap { |dns| dns.timeouts = timeout }]
           addresses = Resolv.new(resolvers).getaddresses(host)
-          addresses.grep(Resolv::IPv6::Regex).take(2) + addresses.grep_v(Resolv::IPv6::Regex).take(2)
-        end
-
-        def ipv6?(address)
-          address.match?(Resolv::IPv6::Regex)
+          found = addresses.grep(Resolv::IPv6::Regex).take(2) + addresses.grep_v(Resolv::IPv6::Regex).take(2)
+          found.map { |address| IPAddr.new(address) }
         end
       end
     end

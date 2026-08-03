@@ -338,19 +338,6 @@ class Feedkit::RequestTest < Minitest::Test
     end
   end
 
-  def test_should_still_fall_back_to_curl_on_ssl_error_without_blocking
-    called = []
-    request = ::Feedkit::Request.new("https://www.example.com/atom.xml")
-
-    request.stub(:request, ->(*) { raise OpenSSL::SSL::SSLError, "unexpected eof while reading" }) do
-      ::Feedkit::Curl.stub(:download, ->(given) { called << given }) do
-        request.download
-      end
-    end
-
-    assert_equal ["https://www.example.com/atom.xml"], called
-  end
-
   # Every hop gets its own connection, so the redirect target is checked the
   # same way the original request was. Only a local server can serve the
   # redirect, so the address it listens on is the one hole in the check here.

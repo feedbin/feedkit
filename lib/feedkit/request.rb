@@ -55,19 +55,6 @@ module Feedkit
       else
         download_to_file(response)
       end
-    rescue OpenSSL::SSL::SSLError => exception
-      # HTTP sometimes has this error that doesn't show up in other clients.
-      # This fallback applies to any host, not just the curated list, so it
-      # stays disabled when blocking: an arbitrary feed must not be able to
-      # reach curl by failing a handshake.
-      if exception.message.include?("unexpected eof while reading") && !@block_ssrf
-        return Curl.download(@parsed_url.url)
-      else
-        # raise inside a rescue skips the clauses beside it, so this has to
-        # convert on its own or the raw OpenSSL error escapes as something no
-        # caller rescuing Feedkit::Error can see.
-        request_error!(exception)
-      end
     rescue => exception
       request_error!(exception)
     ensure

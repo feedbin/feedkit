@@ -362,17 +362,4 @@ class Feedkit::RequestTest < Minitest::Test
 
     assert_instance_of Feedkit::Parser::XMLFeed, response.parse
   end
-
-  def test_should_proxy_url
-    mock_env("FEEDKIT_PROXIED_HOSTS" => "www.example.com", "FEEDKIT_PROXY_HOST" => "http://proxy.com") do
-      request_url = "https://www.example.com/atom.xml"
-
-      proxy_url = "http://proxy.com/atom.xml"
-      stub_request_file("atom.xml", proxy_url)
-
-      ::Feedkit::Request.download(request_url)
-
-      assert_requested :get, proxy_url
-    end
-  end
 end

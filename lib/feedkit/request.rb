@@ -51,7 +51,7 @@ module Feedkit
 
       response = request
       if response.status.code == 304
-        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url, redirects: @redirects, proxied: proxy_host?)
+        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url, redirects: @redirects)
       else
         download_to_file(response)
       end
@@ -83,7 +83,7 @@ module Feedkit
       tempfile.flush
       tempfile.rewind
 
-      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: @redirects, proxied: proxy_host?)
+      Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: @redirects)
     rescue
       tempfile&.close
       raise
@@ -100,7 +100,6 @@ module Feedkit
       Hash.new.tap do |hash|
         hash[:user_agent]        = @user_agent || "Feedbin"
         hash[:accept_encoding]   = "gzip, deflate"   if @auto_inflate
-        hash[:x_proxy_host]      = url.host          if proxy_host?
         hash[:if_none_match]     = @etag             unless @etag.nil?
         hash[:if_modified_since] = @last_modified    unless @last_modified.nil?
         hash[:authorization]     = basic_auth        unless basic_auth.nil?
@@ -120,8 +119,7 @@ module Feedkit
     end
 
     def request
-      request_url = proxy_host? ? proxied_url : @parsed_url.url
-      response = client.get(request_url, **request_options)
+      response = client.get(@parsed_url.url, **request_options)
       response_error!(response) unless success?(response)
       response
     rescue => exception
@@ -130,14 +128,8 @@ module Feedkit
 
     def request_options
       options = {ssl_context: ssl_context}
-      options[:socket_class] = PrivateAddressCheck::Socket if block_ssrf?
+      options[:socket_class] = PrivateAddressCheck::Socket if @block_ssrf
       options
-    end
-
-    # Requests are rewritten to a proxy the operator configured, not to a host
-    # the feed controls, so the address check does not apply to them.
-    def block_ssrf?
-      @block_ssrf && !proxy_host?
     end
 
     def ssl_context
@@ -188,15 +180,6 @@ module Feedkit
       rescue
         nil
       end
-    end
-
-    def proxied_url
-      Feedkit::Rebase.call(target: url, base: ENV["FEEDKIT_PROXY_HOST"]).to_s
-    end
-
-    def proxy_host?
-      return @proxy_host if defined?(@proxy_host)
-      @proxy_host = host_in_list?(ENV["FEEDKIT_PROXIED_HOSTS"])
     end
 
     def curl_host?

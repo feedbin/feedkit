@@ -6,13 +6,12 @@ module Feedkit
   class Response
     attr_reader :path, :redirects
 
-    def initialize(tempfile:, response:, parsed_url:, redirects:, proxied:)
+    def initialize(tempfile:, response:, parsed_url:, redirects:)
       @tempfile   = tempfile
       @path       = tempfile.path
       @response   = response
       @parsed_url = parsed_url
       @redirects  = redirects
-      @proxied    = proxied
     end
 
     def body
@@ -66,11 +65,7 @@ module Feedkit
 
     def request_url
       if !@redirects.empty? && @redirects.all?(&:permanent?)
-        redirect = @redirects.last.to
-        if @proxied
-          redirect = Feedkit::Rebase.call(target: redirect, base: @parsed_url.url).to_s
-        end
-        redirect
+        @redirects.last.to
       else
         @parsed_url.url.to_s
       end

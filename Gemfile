@@ -6,6 +6,7 @@ gem "sax-machine", github: "feedbin/sax-machine", branch: "feedbin"
 gem "feedjira",    github: "feedbin/feedjira",    branch: "f2"
 
 group :development do
+  gem "irb"
   gem "dotenv"
   gem "sinatra"
   gem "webrick"

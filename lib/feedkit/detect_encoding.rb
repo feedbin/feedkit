@@ -2,6 +2,9 @@
 
 module Feedkit
   class DetectEncoding
+
+    MAX_SAMPLE = 250_000
+
     def initialize(string)
       @string = string
     end
@@ -11,8 +14,15 @@ module Feedkit
     end
 
     def detect
-      @result = CharDet.detect(@string.slice(0, 250_000))
+      @result = CharDet.detect(sample)
       self
+    end
+
+    # A body at or under the limit is its own sample. Slicing it would copy the
+    # whole string to produce an equal one, and bodies are usually well under.
+    def sample
+      return @string if @string.bytesize <= MAX_SAMPLE
+      @string.slice(0, MAX_SAMPLE)
     end
 
     def encoding

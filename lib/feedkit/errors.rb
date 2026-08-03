@@ -54,6 +54,9 @@ module Feedkit
   # raised when an SSL error was raised
   class SSLError < Error; end
 
+  # raised when a request would connect to a private network address
+  class PrivateNetworkAddress < Error; end
+
   # raised when a compression error was raised
   class ZlibError < Error; end
 

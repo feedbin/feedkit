@@ -63,7 +63,10 @@ module Feedkit
       if exception.message.include?("unexpected eof while reading") && !@block_ssrf
         return Curl.download(@parsed_url.url)
       else
-        raise exception
+        # raise inside a rescue skips the clauses beside it, so this has to
+        # convert on its own or the raw OpenSSL error escapes as something no
+        # caller rescuing Feedkit::Error can see.
+        request_error!(exception)
       end
     rescue => exception
       request_error!(exception)

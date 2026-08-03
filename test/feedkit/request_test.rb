@@ -315,9 +315,25 @@ class Feedkit::RequestTest < Minitest::Test
 
     request.stub(:request, ->(*) { raise OpenSSL::SSL::SSLError, "unexpected eof while reading" }) do
       ::Feedkit::Curl.stub(:download, ->(*) { flunk "must not reach curl" }) do
-        assert_raises OpenSSL::SSL::SSLError do
+        assert_raises ::Feedkit::SSLError do
           request.download
         end
+      end
+    end
+  end
+
+  # Everything a caller can act on arrives as a Feedkit::Error. An SSL failure
+  # that isn't the close-without-close_notify case has no curl fallback to take,
+  # so it is the one that most easily escapes as a raw OpenSSL error instead.
+  def test_should_raise_a_feedkit_error_for_ssl_errors_with_no_curl_fallback
+    request = ::Feedkit::Request.new("https://www.example.com/atom.xml")
+
+    request.stub(:request, ->(*) { raise OpenSSL::SSL::SSLError, "decryption failed or bad record mac" }) do
+      ::Feedkit::Curl.stub(:download, ->(*) { flunk "must not reach curl" }) do
+        exception = assert_raises ::Feedkit::SSLError do
+          request.download
+        end
+        assert_includes exception.message, "decryption failed"
       end
     end
   end

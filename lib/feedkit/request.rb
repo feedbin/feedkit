@@ -51,7 +51,9 @@ module Feedkit
 
       response = request
       if response.status.code == 304
-        Response.new(tempfile: Tempfile.new, response: response, parsed_url: @parsed_url, redirects: @redirects)
+        # A 304 has no body, so there is nothing to write, checksum, or
+        # persist — creating and unlinking a Tempfile would be wasted syscalls
+        Response.new(tempfile: nil, response: response, parsed_url: @parsed_url, redirects: @redirects)
       else
         download_to_file(response)
       end
@@ -163,6 +165,11 @@ module Feedkit
       end
     end
 
+    # Matches the host portion of an absolute URL. BasicAuth.parse has already
+    # guaranteed a scheme, so a full Addressable parse per request just to
+    # compare the host against a short operator-curated list is wasted work.
+    HOST = %r{\A[a-z][a-z0-9+\-.]*://(?:[^/?#]*@)?([^/?#:]+)}i
+
     def url
       return @url if defined?(@url)
       @url = begin
@@ -170,6 +177,11 @@ module Feedkit
       rescue
         nil
       end
+    end
+
+    def host
+      return @host if defined?(@host)
+      @host = @parsed_url.url.to_s[HOST, 1]
     end
 
     def curl_host?
@@ -184,7 +196,7 @@ module Feedkit
 
     def host_in_list?(list)
       return false if list.nil?
-      url.respond_to?(:host) && list.split(",").include?(url.host)
+      !host.nil? && list.split(",").include?(host)
     end
   end
 end

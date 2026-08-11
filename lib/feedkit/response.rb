@@ -6,9 +6,10 @@ module Feedkit
   class Response
     attr_reader :path, :redirects
 
+    # tempfile is nil for a 304: there is no body to read, hash, or persist
     def initialize(tempfile:, response:, parsed_url:, redirects:)
       @tempfile   = tempfile
-      @path       = tempfile.path
+      @path       = tempfile&.path
       @response   = response
       @parsed_url = parsed_url
       @redirects  = redirects

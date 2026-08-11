@@ -82,14 +82,14 @@ module Feedkit
             sockaddr = ::Socket.pack_sockaddr_in(port, address.to_s)
 
             sock.setsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, 1)
-            sock.connect_nonblock(sockaddr)
 
-            # If that hasn't raised an exception, we somehow managed to connect
-            # immediately and can return without waiting on the others
-            return sock
-          rescue IO::WaitWritable
-            socks << sock
-            address_by_socket[sock] = sockaddr
+            if sock.connect_nonblock(sockaddr, exception: false) == :wait_writable
+              socks << sock
+              address_by_socket[sock] = sockaddr
+            else
+              # Connected immediately, no need to wait on the others
+              return sock
+            end
           rescue => exception
             sock&.close
             outer_exception = exception

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "tempfile"
-require "shellwords"
 require "open3"
 require "http"
 require_relative "errors"
@@ -19,13 +18,12 @@ module Feedkit
 
     def download
       tempfile = Tempfile.new("request", binmode: true)
-      params = {
-        user_agent: ENV["FEEDKIT_USER_AGENT"] || "Feedbin",
-        output: Shellwords.escape(tempfile.path),
-        url: @parsed_url.url
-      }
-      command = "curl --location --silent --user-agent '%<user_agent>s' --output %<output>s '%<url>s'"
-      out, _, status = Open3.capture3(command % params)
+      _, _, status = Open3.capture3(
+        "curl", "--location", "--silent",
+        "--user-agent", ENV["FEEDKIT_USER_AGENT"] || "Feedbin",
+        "--output", tempfile.path,
+        "--url", @parsed_url.url
+      )
       if status.success?
         response = CurlResponse.new(@parsed_url.url)
         Response.new(tempfile: tempfile, response: response, parsed_url: @parsed_url, redirects: [])

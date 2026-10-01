@@ -290,26 +290,113 @@ class Feedkit::RequestTest < Minitest::Test
     end
   end
 
-  # FEEDKIT_CURL_HOSTS is an operator-curated list, not something a feed can
-  # steer, and those hosts need curl to be fetched at all. Dropping the shortcut
-  # while blocking would break every one of them rather than protect anything.
-  def test_should_keep_the_curl_shortcut_when_blocking_ssrf
-    called = []
+  def test_should_use_curl_for_allowlisted_hosts_even_when_blocking_ssrf
     url = "http://www.example.com/atom.xml"
     stub_request_file("atom.xml", url)
+    requested = []
 
     mock_env("FEEDKIT_CURL_HOSTS" => "www.example.com") do
-      ::Feedkit::Curl.stub(:download, ->(given) { called << given }) do
-        ::Feedkit::Request.download(url, block_ssrf: true)
+      Feedkit::Curl.stub(:download, ->(given) { requested << given; :curl_response }) do
+        assert_equal :curl_response, Feedkit::Request.download(url, block_ssrf: true)
       end
     end
 
-    assert_equal [url], called
+    assert_equal [url], requested
     assert_not_requested :get, url
   end
 
-  # Unlike the curated list, this fallback is reachable by any host, so a feed
-  # must not be able to get itself fetched by curl by failing a handshake.
+  def test_should_still_block_private_hosts_outside_the_curl_allowlist
+    mock_env("FEEDKIT_CURL_HOSTS" => "www.example.com") do
+      Feedkit::Curl.stub(:download, ->(*) { flunk "host is not allowlisted" }) do
+        real_requests do
+          assert_raises Feedkit::PrivateNetworkAddress do
+            Feedkit::Request.download("http://127.0.0.1/", block_ssrf: true)
+          end
+        end
+      end
+    end
+  end
+
+  def test_should_keep_curl_available_without_ssrf_protection
+    mock_env("FEEDKIT_CURL_HOSTS" => "www.example.com") do
+      Feedkit::Curl.stub(:download, :curl_response) do
+        assert_equal :curl_response, Feedkit::Request.download("http://www.example.com/atom.xml")
+      end
+    end
+  end
+
+  def test_should_apply_custom_timeouts_without_changing_other_requests
+    request = Feedkit::Request.new("https://www.example.com/", timeout: {connect: 2, write: 3, read: 4})
+    options = request.client.default_options.timeout_options
+    assert_equal 2, options[:connect_timeout]
+    assert_equal 3, options[:write_timeout]
+    assert_equal 4, options[:read_timeout]
+    assert_equal 30, Feedkit::Request.new("https://www.example.com/").client.default_options.timeout_options[:read_timeout]
+  end
+
+  def test_partial_timeouts_keep_the_other_default_limits
+    request = Feedkit::Request.new("https://www.example.com/", timeout: {read: 4})
+    options = request.client.default_options.timeout_options
+    assert_equal 5, options[:connect_timeout]
+    assert_equal 5, options[:write_timeout]
+    assert_equal 4, options[:read_timeout]
+  end
+
+  def test_curl_allowlist_takes_precedence_over_http_client_options
+    url = "http://www.example.com/"
+    stub_request(:get, url).to_return(body: "page")
+    mock_env("FEEDKIT_CURL_HOSTS" => "www.example.com") do
+      Feedkit::Curl.stub(:download, :curl_response) do
+        response = Feedkit::Request.download(url, block_ssrf: true, verify_ssl: true, timeout: {read: 5})
+        assert_equal :curl_response, response
+      end
+    end
+    assert_not_requested :get, url
+  end
+
+  def test_should_verify_tls_when_requested
+    key = OpenSSL::PKey::RSA.new(2048)
+    certificate = OpenSSL::X509::Certificate.new
+    certificate.version = 2
+    certificate.serial = 1
+    certificate.subject = certificate.issuer = OpenSSL::X509::Name.parse("/CN=localhost")
+    certificate.public_key = key.public_key
+    certificate.not_before = Time.now - 60
+    certificate.not_after = Time.now + 60
+    certificate.sign(key, OpenSSL::Digest.new("SHA256"))
+    context = OpenSSL::SSL::SSLContext.new
+    context.cert = certificate
+    context.key = key
+    server = TCPServer.new("127.0.0.1", 0)
+    ssl_server = OpenSSL::SSL::SSLServer.new(server, context)
+    thread = Thread.new do
+      loop do
+        socket = nil
+        begin
+          socket = ssl_server.accept
+          socket.readpartial(4096)
+          socket.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nhi")
+        rescue OpenSSL::SSL::SSLError, IOError
+        ensure
+          socket&.close
+        end
+      end
+    end
+
+    real_requests do
+      url = "https://127.0.0.1:#{server.addr[1]}/"
+      assert_raises Feedkit::SSLError do
+        Feedkit::Request.download(url, verify_ssl: true)
+      end
+      assert_equal "hi", Feedkit::Request.download(url).body
+    end
+  ensure
+    thread&.kill
+    thread&.join
+    server&.close
+  end
+
+  # A failing TLS handshake must not switch transports and bypass the check.
   def test_should_not_fall_back_to_curl_on_ssl_error_when_blocking_ssrf
     request = ::Feedkit::Request.new("https://www.example.com/atom.xml", block_ssrf: true)
 

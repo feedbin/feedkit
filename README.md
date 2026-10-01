@@ -22,7 +22,28 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+response = Feedkit::Request.download(url,
+  block_ssrf: true,
+  verify_ssl: true,
+  timeout: {connect: 5, write: 5, read: 5}
+)
+```
+
+`FEEDKIT_CURL_HOSTS` is an operator-managed hostname allowlist. Matching hosts
+always use curl, taking precedence over `block_ssrf` and HTTP client options.
+Curl does not use the checked socket; the allowlist is an explicit trust decision
+for those hosts and their redirects.
+
+For other hosts, `block_ssrf: true` checks resolved addresses before connecting,
+including each redirect, and refuses private destinations.
+
+`verify_ssl: true` verifies TLS certificates and hostnames. The default remains
+`false` for compatibility with existing feed crawlers.
+
+`timeout:` accepts HTTP client `connect`, `write`, and `read` timeouts in seconds.
+The defaults are 5, 5, and 30 seconds respectively. These limits apply to the
+HTTP client; allowlisted curl requests retain curl's timeout behavior.
 
 ## Development
 

@@ -9,11 +9,12 @@ module Feedkit
   class Request
 
     MAX_SIZE = 10 * 1024 * 1024
+    DEFAULT_TIMEOUTS = {connect: 5, write: 5, read: 30}.freeze
 
     # Sessions are immutable and thread-safe, so the parts of the client
     # that never change between requests are built once and shared
     CLIENT = HTTP
-      .timeout(connect: 5, write: 5, read: 30)
+      .timeout(**DEFAULT_TIMEOUTS)
       .encoding(Encoding::BINARY)
 
     AUTO_INFLATE_CLIENT = CLIENT.use(:auto_inflate)
@@ -23,11 +24,16 @@ module Feedkit
       context.setup # finalizes and freezes the context so it is safe to share
     end
 
+    VERIFIED_SSL_CONTEXT = OpenSSL::SSL::SSLContext.new.tap do |context|
+      context.set_params
+      context.setup
+    end
+
     def self.download(url, **args)
       new(url, **args).download
     end
 
-    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil, block_ssrf: false)
+    def initialize(url, on_redirect: nil, auto_inflate: true, username: nil, password: nil, etag: nil, last_modified: nil, user_agent: nil, block_ssrf: false, verify_ssl: false, timeout: nil)
       @parsed_url    = BasicAuth.parse(url, username: username, password: password)
       @username      = @parsed_url.username
       @password      = @parsed_url.password
@@ -37,13 +43,13 @@ module Feedkit
       @last_modified = last_modified
       @etag          = etag
       @block_ssrf    = block_ssrf
+      @verify_ssl    = verify_ssl
+      @timeout       = timeout
       @redirects     = []
     end
 
-    # curl resolves and connects on its own, so its addresses can't be checked
-    # before it reaches them. FEEDKIT_CURL_HOSTS is an operator-curated list of
-    # known-safe hosts rather than anything a feed can steer, so the shortcut
-    # stays even when blocking SSRF: these hosts need curl to be fetched at all.
+    # The operator-managed curl allowlist takes precedence over HTTP client
+    # options, including block_ssrf. These hosts explicitly opt into curl.
     def download
       if curl_host?
         return Curl.download(@parsed_url.url)
@@ -83,6 +89,7 @@ module Feedkit
 
     def client
       http = @auto_inflate ? AUTO_INFLATE_CLIENT : CLIENT
+      http = http.timeout(**DEFAULT_TIMEOUTS.merge(@timeout)) if @timeout
       http
         .headers(headers)
         .follow(max_hops: 4, on_redirect: on_redirect)
@@ -125,7 +132,7 @@ module Feedkit
     end
 
     def ssl_context
-      SSL_CONTEXT
+      @verify_ssl ? VERIFIED_SSL_CONTEXT : SSL_CONTEXT
     end
 
     def success?(response)
